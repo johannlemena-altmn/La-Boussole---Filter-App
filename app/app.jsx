@@ -2,7 +2,7 @@
 /* global React, ReactDOM */
 
 var { useState, useEffect, useRef, useCallback, useMemo } = React;
-const {
+var {
   Manifesto, Sidebar, SetupView, CaptureView, AnalyseView, TriageView,
   DashboardView, StudioView, TrackerView,
   TweaksPanel, useTweaks, TweakSection, TweakSlider, TweakButton, TweakRadio

@@ -8,7 +8,7 @@ var {
   useCallback,
   useMemo
 } = React;
-const {
+var {
   Manifesto,
   Sidebar,
   SetupView,
