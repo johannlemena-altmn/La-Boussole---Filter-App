@@ -1,5 +1,5 @@
 # Le Filtre — Journal de suivi projet
-*Document de travail interne. Mise à jour : 15 mai 2026.*
+*Document de travail interne. Mise à jour : 16 mai 2026.*
 *Conçu pour rendre le projet actionnable : ce qui est fait, ce qui bloque, ce qu'on décide ensemble.*
 *Double usage : suivi opérationnel + cahier des charges pour future équipe.*
 
@@ -416,3 +416,145 @@ La réponse change tout : si c'est le premier cas, les couches Twitter/Instagram
 - 14/05 — Le cluster a fait émerger "captation" et "attention" comme cluster fort sur 3 newsletters distinctes. Vrai signal vs artefact d'un même article cité ailleurs ?
 - 15/05 — La thèse "carte des publics" pour les 4 voix : non formulée dans les sources, émergée de la combinaison. Confirmation que l'Agent ④ fait son travail.
 - 16/05 — La méthode Lecture Active (vidéo "Forget Your Reading Journal") : son vrai apport n'est pas la prise de notes mais la coupure entre copier, reformuler, réagir — trois gestes cognitifs distincts qui empêchent l'illusion d'apprentissage passif. Logique à intégrer comme contrainte UX dans Le Filtre (les 3 champs sont séparés, pas un bloc libre).
+- 16/05 — Premier déploiement Vercel fonctionnel. L'app tourne sur internet. Root cause du white screen : conflit de déclarations `const` dans le scope global partagé entre les 13 fichiers JS. Fix : `var` pour toutes les destructurations React + composants importés depuis `window`. Architecture pre-compile (Babel build) validée.
+
+---
+
+## Session 16 mai — Déploiement Vercel + Architecture v0.2
+
+### Livraisons du jour
+
+| Statut | Item | Détail |
+|---|---|---|
+| 🟢 | **Déploiement Vercel opérationnel** | URL publique : `la-boussole-filter-app.vercel.app`. GitHub → Vercel pipeline actif. Push = deploy automatique. |
+| 🟢 | **Pre-compile Babel confirmé** | Build `npm run build` compile 13 JSX → 13 JS en ~1.7s. Aucune dépendance Babel-standalone en runtime. |
+| 🟢 | **Bug scope global résolu** | Root cause : `const { useState }` déclaré dans chaque fichier JS chargé comme script global — collision. Fix : `var` partout pour les destructurations React + imports `window`. |
+| 🟢 | **GitHub nettoyé** | Repo pointe sur `Documents/Claude/Projects/Le Filtre - App` (bonne source). Ancien commit 8379 fichiers (Desktop) écrasé par force push. |
+
+### Workflow de déploiement (à documenter pour la prochaine équipe)
+
+```bash
+# 1. Modifier les fichiers dans app/*.jsx
+# 2. Recompiler
+npm run build
+
+# 3. Pousser (token GitHub ghp_... valide 30 jours)
+git add app/ app-dist/
+git commit -m "feat: description du changement"
+git push origin main
+# → Vercel redéploie automatiquement en ~30s
+```
+
+---
+
+## Snapshot architecture v0.2 — 16 mai 2026
+
+### Vue d'ensemble
+
+```
+Le Filtre v0.2 — 13 modules JSX, 6167 lignes
+├── app.jsx         (369 L) — Root, routing 7 phases, state global, TweaksPanel
+├── manifesto.jsx   (171 L) — Landing plein écran, vu une seule fois
+├── components.jsx  (949 L) — SetupView, CaptureView, AnalyseView, Sidebar + composants atomiques
+├── triage.jsx      (454 L) — TriageView, FicheDetail, SyntheseView, VerbatimWall
+├── dashboard.jsx   (404 L) — DashboardView, widgets draggables, coût tokens
+├── studio.jsx      (999 L) — StudioView : MindMap, Storyboard, Infographic, LectureActive, SchemaActif
+├── tracker.jsx     (777 L) — TrackerView, HermesPanel, sparkline, tâches, items liés
+├── cluster.jsx     (629 L) — Cluster neural flow 2D/3D, force-directed, export SVG/PNG
+├── frameworks.jsx  (212 L) — 6 prismes activables, ActivePrismeBar
+├── engine.jsx      (306 L) — Appels Claude API, parsing JSON, logique scoring
+├── extractors.jsx  (187 L) — PDF.js, Tesseract OCR, MediaRecorder, oEmbed
+├── tweaks-panel.jsx(568 L) — TweaksPanel, sliders, radio, sections réglages
+└── defaults.jsx    (142 L) — Données par défaut : projets, blocs, sources, gardefous, sample
+```
+
+### 7 phases de navigation
+
+| Phase | Fichier | Fonctions clés |
+|---|---|---|
+| 00 Manifeste | manifesto.jsx | Landing, intro projet, vu une fois |
+| 01 Calibrage | components.jsx | Projets / Blocs / Sources / 6 Prismes |
+| 02 Capture | components.jsx | Texte, PDF, DOCX, Photo (OCR), Audio, Lien oEmbed |
+| 03 Analyse | components.jsx | Claude API, parallélisme 1-5, score 5 critères |
+| 04 Triage | triage.jsx | Liste, Synthèse, Mur verbatims, export MD/JSON |
+| 05 Dashboard | dashboard.jsx | Widgets draggables, Pulse, Stack, coût tokens |
+| 06 Studio | studio.jsx | Carte mentale, Storyboard, Infographie, Lecture Active, Schéma Mermaid |
+| 07 Tracker | tracker.jsx | Projets + tâches, Hermès IA, sparkline 30j, sources liées |
+
+### Persistance
+
+- `localStorage["le-filtre-v0.2"]` — état global (projets, blocs, items, thème, phase)
+- `localStorage["lf-tracker-v1"]` — tracker projets
+- `localStorage["lf-lectures-v1"]` — sessions Lecture Active
+- `localStorage["lf-prisme-v1"]` — prisme actif
+- `localStorage["le-filtre-dashboard-layout-v0.2"]` — ordre widgets dashboard
+- imageData stripée avant save (limite 5 MB localStorage)
+
+### Stack technique
+
+| Couche | Techno | Note |
+|---|---|---|
+| UI | React 18 UMD (CDN) | Pas de bundler en dev |
+| Styles | CSS custom + variables | Thème dark/light, 3 accents |
+| Fonts | Syne 400/600/700/800 + DM Sans + JetBrains Mono | Google Fonts |
+| Build | Babel CLI `@babel/preset-react` | JSX → JS pre-compilé |
+| Deploy | Vercel (static) | Build: `npm run build`, output: `.` |
+| Repo | GitHub (johannlemena-altmn) | Push auto-déploie |
+| IA | Claude API (claude-3-haiku via Anthropic directe) | Clé API côté client localStorage |
+| OCR | Tesseract.js (chargé à la demande) | fr+en |
+| PDF | PDF.js (CDN) | Multi-page + progress |
+| Cluster | D3-like custom (rAF, SVG) | Aucune lib externe |
+| Mermaid | Chargé à la demande | SchemaActif uniquement |
+
+---
+
+## Screenshots v0.2 — 16 mai 2026
+
+> Pour ajouter une capture : Cmd+Shift+4 → sélectionne la vue → glisse le .png dans `screenshots/` (à créer) et note le nom ici.
+
+| Vue | Fichier attendu | Statut |
+|---|---|---|
+| 00 Manifeste (plein écran) | `screenshots/v0.2-manifeste.png` | A capturer |
+| 01 Calibrage + Prismes | `screenshots/v0.2-calibrage-prismes.png` | A capturer |
+| 02 Capture (multi-modes) | `screenshots/v0.2-capture.png` | A capturer |
+| 03 Analyse en cours | `screenshots/v0.2-analyse.png` | A capturer |
+| 04 Triage liste + fiche | `screenshots/v0.2-triage.png` | A capturer |
+| 04 Mur verbatims | `screenshots/v0.2-verbatims.png` | A capturer |
+| 05 Dashboard widgets | `screenshots/v0.2-dashboard.png` | A capturer |
+| 06 Studio — Lecture Active | `screenshots/v0.2-studio-lecture.png` | A capturer |
+| 06 Studio — Schéma Mermaid | `screenshots/v0.2-studio-mermaid.png` | A capturer |
+| 07 Tracker + Hermès | `screenshots/v0.2-tracker.png` | A capturer |
+| Cluster neural flow 2D | `screenshots/v0.2-cluster.png` | A capturer |
+| TweaksPanel ouvert | `screenshots/v0.2-tweaks.png` | A capturer |
+
+---
+
+## Quick-wins identifiés — 16 mai (analyse code complète)
+
+> Classés par effort / impact. Tous faisables en moins de 2h chacun sauf mention contraire.
+
+### Effort XS (< 30 min)
+
+| # | Item | Pourquoi | Détail |
+|---|---|---|---|
+| QW-1 | **Dark mode par défaut** | L'app est conçue pour le fond vert foncé mais démarre en `light`. Premier lancement décalé visuellement. | `DEFAULT_WEIGHTS.accent = "green"` ok, mais `theme` initial dans `loadState()` fallback = `"light"`. Changer en `"dark"`. |
+| QW-2 | **Badge "LOCAL" → version ou env** | Sur Vercel, le badge vert "LOCAL" est trompeur. Il signale que la clé est stockée localement, pas que l'app tourne en local. | Renommer le label ou ajouter un tooltip explicatif. |
+| QW-3 | **Script deploy.sh** | Actuellement 4 commandes à taper à chaque MAJ. Scriptable en 1. | `npm run build && git add app/ app-dist/ && git commit -m "auto: $(date +%Y-%m-%d)" && git push origin main` |
+| QW-4 | **Mémoriser le token git** | Le token GitHub expire dans 30 jours. Sans credential store, il faudra le retaper. | `git config credential.helper store` + 1 push avec token → mémorisé pour toujours. |
+
+### Effort S (30 min - 1h)
+
+| # | Item | Pourquoi | Détail |
+|---|---|---|---|
+| QW-5 | **Indicateur "Sauvegardé"** | L'app sauvegarde dans localStorage à chaque changement mais rien ne le signale à l'utilisateur. Sentiment d'insécurité. | Petit toast "✓ Sauvegardé" de 1s après chaque `saveState()`. |
+| QW-6 | **Responsive mobile basique** | L'app est accessible depuis un téléphone via l'URL Vercel. La sidebar et le layout 2 colonnes (Triage) cassent en mobile. | Media queries pour sidebar en bas, layout en colonne unique en dessous de 768px. |
+| QW-7 | **Hermès accessible depuis Triage** | L'agent Hermès (questions de pensée critique) est dans le Tracker uniquement. Il est pourtant pertinent dès le Triage : "ce contenu mérite-t-il vraiment ma réponse ?". | Ajouter un bouton "Hermès" dans FicheDetail → ouvre un mini-panel. |
+| QW-8 | **Export 1 fiche → Notion/Obsidian** | Le bouton "Copier MD" copie la fiche en markdown. Mais le format n'est pas optimisé pour Notion (frontmatter) ni Obsidian (wikilinks). | Ajouter 2 variantes d'export dans FicheDetail : "Notion" et "Obsidian". |
+
+### Effort M (1-3h)
+
+| # | Item | Pourquoi | Détail |
+|---|---|---|---|
+| QW-9 | **Raccourcis clavier dans Triage** | Navigation entre fiches à la souris uniquement. En session de triage intense (20+ items), les flèches seraient bien plus rapides. | `ArrowUp/Down` pour naviguer, `C` pour copier, `Delete` pour retirer de la pile. |
+| QW-10 | **Score visible dans la pile Capture** | Les items en attente d'analyse n'ont pas de score. On ne sait pas quelle "urgence" traiter en premier. | Afficher un badge "En attente" coloré + permettre de réorganiser l'ordre avant de lancer l'analyse. |
+| QW-11 | **Onboarding post-manifeste** | Après le manifeste, l'utilisateur arrive sur Calibrage sans guide. Pas évident pour un nouveau. | Ajouter un mini-wizard (3 étapes : "Nomme ton projet → Définis tes blocs → Capture ton premier item") déclenché si `items.length === 0`. |
