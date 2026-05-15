@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Filtre — Backlog &amp; Journal de projet</title>
+<style>
+  :root {
+    --bg:       #eef3e8;
+    --bg2:      #e4ede0;
+    --bg3:      #d6e6ce;
+    --card:     #f4f8f1;
+    --border:   #b8d0ac;
+    --text:     #2e3d28;
+    --cream:    #182016;
+    --muted:    #6a8a5e;
+    --green:    #3a7028;
+    --green-dim:#cde0c4;
+    --gold:     #7a5e18;
+    --gold-dim: #f0e4b0;
+    --red:      #8c2a2a;
+    --red-dim:  #f2d4d4;
+    --blue:     #2a5270;
+    --blue-dim: #ccdde8;
+    --gray:     #8a9e80;
+    --sans:     'Georgia', serif;
+    --mono:     'SF Mono', 'Fira Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.65;
+    display: flex;
+  }
+
+  /* ── SIDEBAR NAV ── */
+  #toc {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+  }
+
+  .toc-brand {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .toc-brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cream);
+    letter-spacing: -0.3px;
+  }
+  .toc-brand-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .toc-date {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--green);
+    margin-top: 6px;
+  }
+
+  .toc-section-head {
+    padding: 8px 20px 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .toc-link {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 20px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 12px;
+    line-height: 1.4;
+    transition: all 0.1s;
+  }
+  .toc-link:hover { background: var(--bg3); color: var(--cream); }
+  .toc-link.active { color: var(--green); background: var(--green-dim); }
+  .toc-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    flex-shrink: 0;
+    min-width: 22px;
+  }
+  .toc-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  #content {
+    flex: 1;
+    min-width: 0;
+    max-width: 900px;
+    padding: 48px 52px 100px;
+  }
+
+  h1.project-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--cream);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  h1.project-title em { color: var(--green); font-style: normal; }
+  .project-vision {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    max-width: 600px;
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* section headers */
+  .section {
+    margin-top: 56px;
+    scroll-margin-top: 24px;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 4px;
+    letter-spacing: -0.2px;
+  }
+  h2 em { font-style: normal; }
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--cream);
+    margin: 24px 0 10px;
+  }
+  .section-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    max-width: 560px;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text);
+  }
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── ITEM TABLE ── */
+  .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .item-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    background: var(--card);
+    transition: border-color 0.1s;
+  }
+  .item-row:hover { border-color: var(--muted); }
+
+  .item-stripe {
+    width: 4px;
+    flex-shrink: 0;
+  }
+  .item-body {
+    flex: 1;
+    padding: 10px 14px;
+    min-width: 0;
+  }
+  .item-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 3px;
+    flex-wrap: wrap;
+  }
+  .item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cream);
+    flex: 1;
+    min-width: 0;
+  }
+  .item-desc {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .item-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* status */
+  .s-done    { background: var(--green-dim); color: var(--green);  border: 1px solid var(--green); }
+  .s-partial { background: var(--gold-dim);  color: var(--gold);   border: 1px solid var(--gold); }
+  .s-backlog { background: var(--blue-dim);  color: var(--blue);   border: 1px solid var(--blue); }
+  .s-todo    { background: var(--bg3);       color: var(--muted);  border: 1px solid var(--border); }
+  .s-block   { background: var(--red-dim);   color: var(--red);    border: 1px solid var(--red); }
+
+  /* priority */
+  .p1 { background: #f5d4d4; color: #7a1a1a; border: 1px solid #c07070; }
+  .p2 { background: var(--gold-dim); color: var(--gold); border: 1px solid #b09040; }
+  .p3 { background: var(--blue-dim); color: var(--blue); border: 1px solid #6090b0; }
+  .p4 { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+
+  /* effort */
+  .ef-s { background: var(--green-dim); color: var(--green); border: 1px solid #80b870; }
+  .ef-m { background: var(--gold-dim);  color: var(--gold);  border: 1px solid #b09040; }
+  .ef-l { background: var(--red-dim);   color: var(--red);   border: 1px solid #c08080; }
+
+  /* stripe colors */
+  .stripe-green  { background: var(--green); }
+  .stripe-gold   { background: var(--gold); }
+  .stripe-blue   { background: var(--blue); }
+  .stripe-gray   { background: var(--gray); }
+  .stripe-red    { background: var(--red); }
+  .stripe-muted  { background: var(--muted); }
+
+  /* ── CALLOUT ── */
+  .callout {
+    padding: 12px 16px;
+    border-radius: 4px;
+    border-left: 3px solid;
+    margin: 16px 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .callout-info   { background: var(--blue-dim);  border-color: var(--blue);  color: var(--text); }
+  .callout-warn   { background: var(--red-dim);   border-color: var(--red);   color: var(--text); }
+  .callout-done   { background: var(--green-dim); border-color: var(--green); color: var(--text); }
+  .callout-note   { background: var(--bg3);       border-color: var(--muted); color: var(--muted); }
+
+  /* ── DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 12px 0;
+  }
+  .data-table th {
+    text-align: left;
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .data-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg3); }
+  .data-table strong { color: var(--cream); }
+
+  /* ── CODE ── */
+  code {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg3);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--green);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    color: var(--text);
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+
+  /* ── METRICS ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .metric-card {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--card);
+  }
+  .metric-val { font-size: 28px; font-weight: 700; color: var(--cream); }
+  .metric-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── PHASE BADGE ── */
+  .phase-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── DECISION BLOCK ── */
+  .decision {
+    margin: 10px 0;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg2);
+  }
+  .decision-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .decision-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  /* ── PRINT ── */
+  @media print {
+    #toc { display: none; }
+    #content { padding: 20px; }
+    .item-row:hover { border-color: var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- SIDEBAR NAV -->
+<!-- ──────────────────────────────────────────── -->
+<nav id="toc">
+  <div class="toc-brand">
+    <div class="toc-brand-title">Le <em style="color:var(--green);font-style:normal">Filtre</em></div>
+    <div class="toc-brand-sub">Backlog &amp; journal de projet</div>
+    <div class="toc-date">v0.2 · Mis à jour le 15 mai 2026</div>
+  </div>
+
+  <div class="toc-section-head">Livraisons</div>
+  <a href="#s1" class="toc-link"><span class="toc-num">01</span><span class="toc-dot" style="background:var(--green)"></span>V2.1 — 14 mai</a>
+  <a href="#s2" class="toc-link"><span class="toc-num">02</span><span class="toc-dot" style="background:var(--green)"></span>15 mai — Agentic OS</a>
+  <a href="#s3" class="toc-link"><span class="toc-num">03</span><span class="toc-dot" style="background:var(--green)"></span>16 mai — Boussole des Récits</a>
+
+  <div class="toc-section-head" style="margin-top:12px">Backlog V2.3</div>
+  <a href="#s4" class="toc-link"><span class="toc-num">04</span><span class="toc-dot" style="background:var(--blue)"></span>Lecture &amp; Pensée critique</a>
+  <a href="#s5" class="toc-link"><span class="toc-num">05</span><span class="toc-dot" style="background:var(--blue)"></span>Projets &amp; Suivi</a>
+  <a href="#s6" class="toc-link"><span class="toc-num">06</span><span class="toc-dot" style="background:var(--blue)"></span>Notes physiques → numériques</a>
+
+  <div class="toc-section-head" style="margin-top:12px">Backlog V2.2</div>
+  <a href="#s7" class="toc-link"><span class="toc-num">07</span><span class="toc-dot" style="background:var(--red)"></span>Agents dans l'UI</a>
+  <a href="#s8" class="toc-link"><span class="toc-num">08</span><span class="toc-dot" style="background:var(--red)"></span>Extraction DOCX</a>
+  <a href="#s9" class="toc-link"><span class="toc-num">09</span><span class="toc-dot" style="background:var(--blue)"></span>Design &amp; Manifeste</a>
+  <a href="#s10" class="toc-link"><span class="toc-num">10</span><span class="toc-dot" style="background:var(--blue)"></span>Cluster &amp; Analyse</a>
+  <a href="#s11" class="toc-link"><span class="toc-num">11</span><span class="toc-dot" style="background:var(--blue)"></span>Studio &amp; Dashboard</a>
+  <a href="#s12" class="toc-link"><span class="toc-num">12</span><span class="toc-dot" style="background:var(--blue)"></span>MCP &amp; Automatisation</a>
+
+  <div class="toc-section-head" style="margin-top:12px">Décisions</div>
+  <a href="#s13" class="toc-link"><span class="toc-num">13</span><span class="toc-dot" style="background:var(--muted)"></span>À creuser ensemble</a>
+  <a href="#s14" class="toc-link"><span class="toc-num">14</span><span class="toc-dot" style="background:var(--red)"></span>Bloquants identifiés</a>
+  <a href="#s15" class="toc-link"><span class="toc-num">15</span><span class="toc-dot" style="background:var(--muted)"></span>Architecture recommandée</a>
+
+  <div class="toc-section-head" style="margin-top:12px">Cahier de bord</div>
+  <a href="#s16" class="toc-link"><span class="toc-num">16</span><span class="toc-dot" style="background:var(--muted)"></span>Cahier des charges</a>
+  <a href="#s17" class="toc-link"><span class="toc-num">17</span><span class="toc-dot" style="background:var(--muted)"></span>Notes d'arbitrage</a>
+  <a href="#s18" class="toc-link"><span class="toc-num">18</span><span class="toc-dot" style="background:var(--muted)"></span>Carnet de bord</a>
+</nav>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- MAIN CONTENT -->
+<!-- ──────────────────────────────────────────── -->
+<main id="content">
+
+  <h1 class="project-title">Le <em>Filtre</em> — Backlog &amp; Journal</h1>
+  <p class="project-vision">
+    Un outil de triage éditorial sobre, local-first, open-source visé — qui calibre l'IA sur
+    <em style="font-style:italic;color:var(--cream)">ta</em> grille de lecture, te laisse le geste humain
+    (dessin, montage, écriture), et expose explicitement ses limites + sa stack.
+  </p>
+
+  <!-- LÉGENDE -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> Livré</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--gold)"></span> Partiel</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span> Backlog</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--gray)"></span> À creuser</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> Bloquant</div>
+    <span style="margin: 0 4px;"></span>
+    <div class="legend-item"><span class="badge p1">P1</span> Urgent</div>
+    <div class="legend-item"><span class="badge p2">P2</span> Important</div>
+    <div class="legend-item"><span class="badge p3">P3</span> Backlog</div>
+    <div class="legend-item"><span class="badge p4">P4</span> Un jour</div>
+    <span style="margin: 0 4px;"></span>
+    <div class="legend-item"><span class="badge ef-s">S</span> Petit</div>
+    <div class="legend-item"><span class="badge ef-m">M</span> Moyen</div>
+    <div class="legend-item"><span class="badge ef-l">L</span> Large</div>
+  </div>
+
+  <!-- Métriques globales -->
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--green)">7</div>
+      <div class="metric-label">Phases livrées</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--gold)">6</div>
+      <div class="metric-label">Skills Cowork packagés</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">28</div>
+      <div class="metric-label">Items backlog actifs</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--red)">4</div>
+      <div class="metric-label">Bloquants ouverts</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- §01 — V2.1 Livraisons -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="s1">
+    <div class="section-num">§01</div>
+    <h2>V2.1 — Livré le 14 mai</h2>
+    <p class="section-sub">Première version complète — 6 phases + captures multi-modal + studio + token widget.</p>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Cluster verbatim 2D / 3D</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">Extraction unigrammes + bigrammes, co-occurrence, layout force-directed (2D) + Fibonacci sphere (3D). Filtre liens, export SVG + PNG.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Capture fichier</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">PDF.js multi-page + barre de progression. DOCX extraction minimale (parse w:t — à durcir). Texte / MD / CSV / JSON natifs.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Capture photo</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">Tesseract.js OCR fr+en, chargé à la demande, barre de progression, score confiance.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Capture audio</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">MediaRecorder + Web Speech API (Chrome/Safari). Transcription live fr-FR.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Capture lien</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">noembed.com oEmbed — aperçu titre / auteur / thumbnail avant empilement.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Studio — 3 exports</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">Carte mentale → SVG + PNG. Storyboard → markdown. Infographie → print PDF + HTML.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Token cost widget</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">Compteur flottant temps réel : tokens cumulés + coût en €, historique par appel, graphique barres.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">6 phases de navigation</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">Calibrage / Capture / Analyse / Triage / Dashboard / Studio.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- §02 — Session 15 mai -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="s2">
+    <div class="section-num">§02</div>
+    <h2>Session 15 mai — Agentic OS</h2>
+    <p class="section-sub">6 skills Cowork + cluster v2 neural flow + infographie v2 + connexions MCP.</p>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">6 Skills Cowork packagés</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">boussole-compress ⓪ / storyboard ① / interview ② / veille-hebdo ③ / synthese-profonde ④ / dataviz ⑤. ADN éditorial figé + anchors calibration + auto-évaluation 5 dimensions.</div>
+          <div class="item-meta"><code>agents-ia/skills/*.skill</code></div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Cluster v2 "neural flow"</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">Fond sombre, lueurs SVG par bloc, physique live rAF, pulse rings, panneau "Figures dominantes", labels alternés, section Mécanismes dépliable.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Infographie v2</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">Titre éditable inline, 2 colonnes (distribution + termes récurrents + sources pivot), export Markdown.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">MCPs connectés</span>
+            <span class="badge s-done">Livré</span>
+          </div>
+          <div class="item-desc">Gmail / Drive / Calendar opérationnels pour Agent ③ Veille Hebdo. Mermaid Chart MCP connecté (rendu SVG dans Cowork).</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-gold"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Dataviz Agent ⑤</span>
+            <span class="badge s-partial">Partiel</span>
+          </div>
+          <div class="item-desc">Napkin.ai (prompt manuel) + Datawrapper (CSV + config) + Mermaid (code). Opérationnel mais pas intégré dans l'UI du Filtre.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-gold"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Manifeste du Filtre</span>
+            <span class="badge s-partial">Partiel</span>
+          </div>
+          <div class="item-desc">Corpus théorique identifié (4 voix + carte des publics). Principe ① documenté. Principes ②–⑥ à construire.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- §03 — Session 16 mai -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="section" id="s3">
+    <div class="section-num">§03</div>
+    <h2>Session 16 mai — Boussole des Récits</h2>
+    <p class="section-sub">Lecture Active + Phase 07 Tracker + 6 prismes de cadrage + Google Doc session 3.</p>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Mode Lecture Active</span>
+            <span class="badge s-done">Livré</span>
+            <span class="phase-tag">Studio · 4e outil ✦</span>
+          </div>
+          <div class="item-desc">Flux 3 étapes : Ancrage (notes libres) → Extraction (extrait exact + paraphrase + réaction) → Usage (4 modes : Enseigner / Expérimenter / Créer / Documenter). Export Markdown structuré.</div>
+          <div class="item-meta"><code>studio.jsx</code> <code>lf-lectures-v1</code></div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Phase 07 — Tracker de projets</span>
+            <span class="badge s-done">Livré</span>
+            <span class="phase-tag">Phase 07</span>
+          </div>
+          <div class="item-desc">Projets avec statuts (Idée / En cours / Bloqué / Livré), checklist de tâches, sparkline progression 30j, lier des sources issues de la veille qualifiée.</div>
+          <div class="item-meta"><code>tracker.jsx</code> <code>lf-tracker-v1</code></div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Boîte à outils — 6 prismes</span>
+            <span class="badge s-done">Livré</span>
+            <span class="phase-tag">Calibrage · onglet Prismes</span>
+          </div>
+          <div class="item-desc">Double Diamond, 6 Portes Campus Transition, AARRR, WHY·HOW·WHAT, SIMAC, Méthode Lecture Active. Prisme actif = barre de référence visible en Analyse + Triage.</div>
+          <div class="item-meta"><code>frameworks.jsx</code> <code>lf-prisme-v1</code></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- BACKLOG V2.3 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="callout callout-info" style="margin-top:32px">
+    <strong>Backlog V2.3 — Boussole des Récits</strong><br>
+    Demande du 15 mai : transformer Le Filtre en système de pensée actif — lire avec intention, ancrer dans des projets concrets, construire une rhétorique personnelle sur le long terme.
+  </div>
+
+  <!-- §04 -->
+  <section class="section" id="s4">
+    <div class="section-num">§04</div>
+    <h2>Lecture &amp; Pensée critique</h2>
+    <p class="section-sub">Couche 1 : lire moins mais mieux. Ancrer les idées dans le corps et les projets.</p>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Mode Lecture Active</span>
+            <span class="badge s-done">Livré ✅</span>
+            <span class="badge p1">P1</span>
+          </div>
+          <div class="item-desc">3 étapes séparées (Ancrage / Extraction / Usage), 4 modes d'intégration. <code>lf-lectures-v1</code>.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Boîte à outils — 6 prismes</span>
+            <span class="badge s-done">Livré ✅</span>
+            <span class="badge p2">P2</span>
+          </div>
+          <div class="item-desc">Onglet Prismes dans Calibrage. Prisme actif visible en Analyse + Triage. <code>lf-prisme-v1</code>.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Mode Journaling / écoute active</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Prompts structurés depuis n'importe quel item : pensée critique (contre-arguments, angles morts, sources manquantes), rhétorique (formulation pour public non-initié), prise de parole (pitch 60s, ouverture atelier, hook conférence). Historique <code>localStorage</code>.</div>
+          <div class="item-meta"><span class="badge p3">Dépend de : Lecture Active</span></div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Stratégie Ancrée — couche frameworks</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-l">L</span>
+          </div>
+          <div class="item-desc">7 modules comme socle épistémique. Module 0 (Hygiène Cognitive : F/I/V/U, OSCAR, Spinoza) = garde-fou en haut de chaque phase. Modules 1–6 = prismes activables dans la boîte à outils. 3 layers (Forge perso / Diffusion / Offre produit).</div>
+          <div class="item-meta"><span class="badge p3">Dépend de : Boîte à outils frameworks</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §05 -->
+  <section class="section" id="s5">
+    <div class="section-num">§05</div>
+    <h2>Projets &amp; Suivi</h2>
+    <p class="section-sub">Couche 2 : ancrer les signaux dans des projets concrets. Voir ce qu'on a lu sur un sujet d'un coup.</p>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Tracker de projets — Phase 07</span>
+            <span class="badge s-done">Livré ✅</span>
+            <span class="badge p2">P2</span>
+          </div>
+          <div class="item-desc">Projets + tâches + statuts + sparkline 30j + lien vers items de la veille. <code>lf-tracker-v1</code>.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Vue projet : tous les contenus associés</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Pour chaque projet : tableau de bord des items rattachés (liste sources, cluster restreint, timeline de capture, score moyen pertinence). "Ce que j'ai lu sur ce sujet" d'un coup.</div>
+          <div class="item-meta"><span class="badge p3">Dépend de : Tracker de projets</span></div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Graphes de progression par projet</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Items capturés × temps, tâches complétées × temps, score moyen des sources × temps. Sparklines ou barres.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Mapping contenu → projet (Triage)</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Bouton "Rattacher à un projet" sur chaque item qualifié en Triage. Aussi déclenchable depuis Lecture Active (champ Usage → sélectionner projet existant).</div>
+          <div class="item-meta"><span class="badge p3">Dépend de : Tracker + Lecture Active</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §06 -->
+  <section class="section" id="s6">
+    <div class="section-num">§06</div>
+    <h2>Notes physiques → numériques</h2>
+    <p class="section-sub">Couche 3 : fermer la boucle entre le papier et le Filtre.</p>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Photo de notes manuscrites → numérique</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Mode "Photo de notes" dans Capture : photo d'un schéma ou note manuscrite → OCR Tesseract.js → zone éditable → titre auto-suggéré → pile Le Filtre.</div>
+          <div class="item-meta"><span class="badge p3">Dépend de : OCR existant (Tesseract.js)</span></div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Export notes vers dossier bureau</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Depuis n'importe quelle note (Lecture Active, OCR, Journaling) : "Sauvegarder sur le bureau" → File System Access API (Chrome/Edge) → fichier .md dans dossier choisi. Historique exports dans Dashboard.</div>
+          <div class="item-meta"><span class="badge p3">Dépend de : File System Access API</span></div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Dossier projet automatique</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p4">P4</span>
+            <span class="badge ef-l">L</span>
+          </div>
+          <div class="item-desc">Si item rattaché à un projet : option "Créer dossier projet" sur le bureau avec sous-dossiers (Notes / Sources / Exports). Vérifier compatibilité File System Access API avant de coder.</div>
+          <div class="item-meta"><span class="badge p3">Dépend de : Export notes + Tracker</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- BACKLOG V2.2 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="callout callout-warn" style="margin-top:32px">
+    <strong>Backlog V2.2 — Court terme (1-2 sprints)</strong><br>
+    Items urgents identifiés : agents invisibles dans l'UI, extraction DOCX approximative, design incohérent.
+  </div>
+
+  <!-- §07 -->
+  <section class="section" id="s7">
+    <div class="section-num">§07</div>
+    <h2>Agents dans l'UI <span style="color:var(--red);font-size:14px">🔴 Priorité 1</span></h2>
+    <p class="section-sub">Les 6 skills existent mais sont invisibles dans Le Filtre. L'utilisateur ne peut pas les déclencher depuis l'interface.</p>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Boutons "Déclencher un agent" dans Triage</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p1">P1</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Sur chaque item scoré ≥ 80 : afficher ① Storyboard et/ou ② Interview. Sur cluster 3+ items même bloc ≥ 75 : afficher ④ Synthèse.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Guardrails — friction avant lancement</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p1">P1</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Avant tout appel Claude coûteux : modale d'estimation (tokens estimés, coût en €, temps estimé). Bouton "Annuler" toujours visible. Confirmation obligatoire.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Dashboard → Agent ③ Veille Hebdo</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p1">P1</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Bouton "Lancer la veille" dans Phase 05, avec sélection période + estimation coût avant confirmation.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Agent ⑤ Dataviz dans Studio</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Si signal contient données chiffrées : bouton "Créer un visuel" → choix outil (Mermaid / Napkin prompt / Datawrapper CSV).</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Agent ⓪ Compress en amont</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Option "Compresser d'abord" avant analyse sur fichier > 5 000 mots. Afficher l'économie tokens estimée.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §08 -->
+  <section class="section" id="s8">
+    <div class="section-num">§08</div>
+    <h2>Extraction DOCX propre <span style="color:var(--red);font-size:14px">🔴 Priorité 2</span></h2>
+    <p class="section-sub">Extraction actuelle approximative (parse w:t binaire). À remplacer par JSZip + XML propre.</p>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">JSZip pour DOCX</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p1">P1</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Remplacer le parse binaire approximatif par JSZip + extraction XML propre. Cible : 99% fidélité texte, titres hiérarchiques, listes.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">PDF scanné → OCR auto</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Si pdfjs renvoie &lt; 50 caractères : basculer automatiquement sur Tesseract page par page. Barre de progression par page.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Détection langue auto OCR</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Remplacer fra+eng systématique par détection auto (langdetect.js). Impact perf × 2 actuellement.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §09 -->
+  <section class="section" id="s9">
+    <div class="section-num">§09</div>
+    <h2>Design &amp; Manifeste</h2>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Design refresh — Low-tech cohérent</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p1">P1</span>
+            <span class="badge ef-l">L</span>
+          </div>
+          <div class="item-desc">Inspiration richardhanna.dev : typographie texte-first, espacement généreux, zéro décoration superflue, monochrome + une couleur accent. Cohérent avec principe ① sobre/local-first.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Manifeste du Filtre — document complet</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p1">P1</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">6 principes max (calqués sur 6 portes campus de la transition). Principe ① déjà documenté. Principes ②–⑥ à construire avec Johann. Plein écran au premier lancement.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Page "Lire le Manifeste"</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Actuellement bouton sans destination. Rédiger et intégrer le manifeste complet dans l'app.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §10 -->
+  <section class="section" id="s10">
+    <div class="section-num">§10</div>
+    <h2>Cluster &amp; Analyse</h2>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">TF-IDF + clustering k-means</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-l">L</span>
+          </div>
+          <div class="item-desc">Remplacer n-grams par TF-IDF (côté JS) ou appel Claude dédié pour extraction concepts.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Cluster temporel</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-l">L</span>
+          </div>
+          <div class="item-desc">Axe temps en plus — voir l'évolution des thèmes sur 4 à 12 semaines.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Filtrer cluster par bloc</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">N'afficher que les noeuds d'un bloc B1–B6 précis.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Dédoublonnage global</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-m">M</span>
+          </div>
+          <div class="item-desc">Cosine similarity sur le texte des items — détecter les doublons cross-items, pas juste par item individuel.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §11 -->
+  <section class="section" id="s11">
+    <div class="section-num">§11</div>
+    <h2>Studio &amp; Dashboard</h2>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">PNG export storyboard</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Actuellement markdown only. html-to-image pour PNG haute résolution.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Infographie A4 vraie</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">html-to-image → PNG au lieu du print CSS.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Coût mensuel réel</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Calculer depuis le tracking local des appels Claude (déjà partiellement implémenté via lf_stats).</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Widget pile vieillissante</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p3">P3</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Items non traités depuis > X jours — alerte douce dans Dashboard.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §12 -->
+  <section class="section" id="s12">
+    <div class="section-num">§12</div>
+    <h2>MCP &amp; Automatisation</h2>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Démo Agent ③ Veille Hebdo</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p1">P1</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Démontrer le flux complet : Gmail MCP scan → rapport 6 blocs → save Drive. Tester avant présentation partenaires.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Schedule Agent ③</span>
+            <span class="badge s-backlog">Backlog</span>
+            <span class="badge p2">P2</span>
+            <span class="badge ef-s">S</span>
+          </div>
+          <div class="item-desc">Configurer via skill "schedule" de Cowork pour lundi 7h automatique.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-blue"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Napkin.ai API key</span>
+            <span class="badge s-todo">À surveiller</span>
+            <span class="badge p2">P2</span>
+          </div>
+          <div class="item-desc">En developer preview. Surveiller la disponibilité, configurer quand ouvert.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- §13 -->
+  <section class="section" id="s13">
+    <div class="section-num">§13</div>
+    <h2>Décisions à prendre ensemble</h2>
+    <p class="section-sub">Points ouverts qui nécessitent une discussion avant de coder.</p>
+
+    <h3>Modèle open-source local vs Claude</h3>
+    <div class="decision">
+      <div class="decision-label">Contexte</div>
+      <div class="decision-text">
+        Vise local-first/open-source (principe ①) mais moteur actuel = Claude (Anthropic), propriétaire.<br><br>
+        Options : (a) Mistral 7B / Llama via Ollama, (b) garder Claude + fallback local, (c) attendre qualité locale suffisante.<br><br>
+        <strong>Recommandation :</strong> (b) pragmatique. Documenter clairement. Laisser l'utilisateur choisir.
+      </div>
+    </div>
+
+    <h3>Périmètre social listening</h3>
+    <div class="callout callout-note" style="margin-top: 8px">
+      Question clé : Le Filtre est-il pour les <strong>éditeurs qui surveillent leur propre espace</strong> (Buska / Agorapulse) ou pour les <strong>journalistes / penseurs qui surveillent un champ de débat</strong> (veille de veille) ?
+      <br><br>
+      <strong>Recommandation :</strong> viser le second profil. Nommer le positionnement explicitement dans le manifeste : "outil pour navigateurs de sens, pas pour community managers."
+    </div>
+
+    <table class="data-table" style="margin-top: 12px">
+      <thead><tr><th>Couche</th><th>Outil</th><th>Coût</th><th>Priorité</th></tr></thead>
+      <tbody>
+        <tr><td>1 — RSS Parser</td><td>rss-parser (CDN)</td><td>Gratuit</td><td><span class="badge p1">V2.2</span></td></tr>
+        <tr><td>2 — Mastodon API</td><td>API ouverte, sans auth</td><td>Gratuit</td><td><span class="badge p2">V2.3</span></td></tr>
+        <tr><td>3 — Recherche sémantique</td><td>Exa.ai / SearXNG</td><td>$5/1 000 req</td><td><span class="badge p2">V2.3</span></td></tr>
+        <tr><td>4 — YouTube captions</td><td>YouTube Data API v3</td><td>10 000 unités/jour gratuit</td><td><span class="badge p3">V2.4</span></td></tr>
+        <tr><td>5 — Reddit</td><td>Reddit OAuth</td><td>100 req/min gratuit</td><td><span class="badge p4">Optionnel</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Corpus théorique — Clusters 2-6</h3>
+    <div class="decision">
+      <div class="decision-text">
+        Pistes Johann : Bihouix, Citton, Charbonnier, Gorz.<br>
+        Zone blanche à documenter comme signaux Le Filtre avant publication du manifeste complet.<br>
+        <strong>Thèse confirmée :</strong> corpus = cartographie des publics, pas manifeste théorique.
+      </div>
+    </div>
+
+    <h3>Modèle économique</h3>
+    <div class="decision">
+      <div class="decision-text">
+        Open-source ≠ gratuit pour utilisateur final.<br>
+        Pistes : SaaS hébergé (payant), version locale (gratuite), services pros (audit veille, formation).<br>
+        À discuter avec partenaires identifiés.
+      </div>
+    </div>
+  </section>
+
+  <!-- §14 -->
+  <section class="section" id="s14">
+    <div class="section-num">§14</div>
+    <h2>Bloquants identifiés</h2>
+    <div class="item-list">
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">API Meta</span>
+            <span class="badge s-block">Bloquant</span>
+          </div>
+          <div class="item-desc">Coût ($100–$5 000/mois) + restrictions ToS + review longue. Décision : choisir le scope social listening avant d'investir.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Hébergement Whisper.cpp</span>
+            <span class="badge s-block">Bloquant</span>
+          </div>
+          <div class="item-desc">C++, pas navigateur. Nécessite un backend optionnel ou installation locale utilisateur.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Modèle ML apprentissage continu</span>
+            <span class="badge s-block">Bloquant</span>
+          </div>
+          <div class="item-desc">Complexe, demande infra. Reporter V1.0 ou repenser comme fine-tuning léger.</div>
+        </div>
+      </div>
+
+      <div class="item-row">
+        <div class="item-stripe stripe-red"></div>
+        <div class="item-body">
+          <div class="item-header">
+            <span class="item-title">Napkin.ai API</span>
+            <span class="badge s-block">Bloquant</span>
+          </div>
+          <div class="item-desc">Developer preview — pas encore ouverte. Surveiller la disponibilité.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §15 -->
+  <section class="section" id="s15">
+    <div class="section-num">§15</div>
+    <h2>Architecture recommandée</h2>
+    <pre>SOCIAL LISTENING STACK
+        ↓
+Couche 1 : RSS Parser (zero API key)     ← Priorité V2.2
+Couche 2 : Mastodon API (open)           ← Priorité V2.3
+Couche 3 : Exa.ai / SearXNG (semantic)  ← Priorité V2.3
+Couche 4 : YouTube captions API          ← Priorité V2.4
+Couche 5 : Reddit API (communauté)       ← Optionnel
+        ↓
+Filtre Le Filtre (scoring, triage, cluster)
+        ↓
+Agents Boussole (synthèse, podcast, dataviz)</pre>
+
+    <h3>Stack technique actuelle</h3>
+    <table class="data-table">
+      <thead><tr><th>Couche</th><th>Technologie</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend</td><td>React (CDN) + TailwindCSS</td><td>Servi via Python HTTP server</td></tr>
+        <tr><td>IA</td><td>Claude API (Anthropic)</td><td>Appel direct navigateur (<code>dangerous-direct-browser-access</code>)</td></tr>
+        <tr><td>Stockage</td><td>localStorage</td><td><code>le-filtre-v0.2</code> + clés séparées par feature</td></tr>
+        <tr><td>Capture</td><td>PDF.js + Tesseract.js + Web Speech + MediaRecorder + noembed</td><td>100% client-side</td></tr>
+        <tr><td>Visualisation</td><td>Cluster force-directed (2D/3D) + Studio 4 outils</td><td></td></tr>
+        <tr><td>Automatisation</td><td>6 Skills Cowork + MCPs (Gmail, Drive, Calendar, Mermaid)</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h3>localStorage — clés utilisées</h3>
+    <table class="data-table">
+      <thead><tr><th>Clé</th><th>Contenu</th></tr></thead>
+      <tbody>
+        <tr><td><code>le-filtre-v0.2</code></td><td>État principal : projets, blocs, sources, items, stack, networks, thème</td></tr>
+        <tr><td><code>lf-lectures-v1</code></td><td>Mode Lecture Active — notes et sessions</td></tr>
+        <tr><td><code>lf-tracker-v1</code></td><td>Tracker Phase 07 — projets + tâches + historique</td></tr>
+        <tr><td><code>lf-prisme-v1</code></td><td>ID du prisme actif (frameworks)</td></tr>
+        <tr><td><code>le-filtre-dashboard-layout-v0.2</code></td><td>Layout Dashboard (positions widgets)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr>
+
+  <!-- §16 -->
+  <section class="section" id="s16">
+    <div class="section-num">§16</div>
+    <h2>Cahier des charges — Pour future équipe</h2>
+
+    <h3>Principes non négociables</h3>
+    <div class="item-list" style="margin-bottom: 16px">
+      <div class="item-row"><div class="item-stripe stripe-green"></div><div class="item-body"><div class="item-title">① Sobre</div><div class="item-desc">Aucun appel réseau non nécessaire, pas d'analytics tiers, pas de tracking.</div></div></div>
+      <div class="item-row"><div class="item-stripe stripe-green"></div><div class="item-body"><div class="item-title">② Local-first</div><div class="item-desc">Toutes les données restent sur la machine de l'utilisateur (localStorage / IndexedDB).</div></div></div>
+      <div class="item-row"><div class="item-stripe stripe-green"></div><div class="item-body"><div class="item-title">③ Open-source visé</div><div class="item-desc">Code lisible, documenté, sans dépendances propriétaires obligatoires.</div></div></div>
+      <div class="item-row"><div class="item-stripe stripe-green"></div><div class="item-body"><div class="item-title">④ Friction explicite</div><div class="item-desc">Chaque opération coûteuse (tokens Claude) affiche son coût estimé avant confirmation.</div></div></div>
+      <div class="item-row"><div class="item-stripe stripe-green"></div><div class="item-body"><div class="item-title">⑤ Exposer les limites</div><div class="item-desc">L'outil dit ce qu'il ne sait pas faire, ce qui est approximatif, ce qui est expérimental.</div></div></div>
+    </div>
+
+    <h3>Fonctionnalités V2.2 — À ne PAS implémenter</h3>
+    <div class="callout callout-warn">
+      APIs sociales (Meta, TikTok) · Backend serveur · Comptes utilisateurs / authentification · Analytics / télémétrie
+    </div>
+
+    <h3>Partenaires potentiels</h3>
+    <table class="data-table">
+      <thead><tr><th>Partenaire</th><th>Type</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Richard Hanna</strong> (richardhanna.dev)</td><td>Tiers-lieu numérique</td><td>Distribution, cas d'usage, inspiration design</td></tr>
+        <tr><td>TTSO / Bien ou bien / Hallu World</td><td>Médias indépendants</td><td>Testeurs alpha</td></tr>
+        <tr><td>Low Tech Lab</td><td>Technique + pédagogique</td><td>Partenariat, caution manifeste</td></tr>
+        <tr><td>data.europa.eu / Programminghistorian</td><td>Académique</td><td>Caution méthodologique</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- §17 -->
+  <section class="section" id="s17">
+    <div class="section-num">§17</div>
+    <h2>Notes d'arbitrage</h2>
+
+    <h3>14 mai 2026</h3>
+    <div class="decision">
+      <div class="decision-text">
+        Mode sombre → clair en principal ✅ · 6 phases de navigation ✅ · Manifeste plein écran au premier lancement ✅ · Cluster 2D validable → 3D ✅ · Modes Fichier/Photo/Audio/Lien câblés ✅
+      </div>
+    </div>
+
+    <h3>15 mai 2026</h3>
+    <div class="decision">
+      <div class="decision-text">
+        Agentic OS : 6 skills packagés + ADN éditorial figé + calibration ML ✅ · Thèse corpus = cartographie des publics ✅ · Séquence éditoriale : Agent ④ Synthèse → test audience → Agent ② Podcast si traction ✅ · Mermaid Chart MCP connecté ✅ · Design/manifeste Richard Hanna → backlog P1 V2.2 🔵
+      </div>
+    </div>
+
+    <h3>16 mai 2026</h3>
+    <div class="decision">
+      <div class="decision-text">
+        Mode Lecture Active livré dans Studio (4e outil ✦) ✅ · Backlog V2.3 structuré : 3 couches ✅ · Stratégie Ancrée (7 modules) absorbée comme couche frameworks ✅ · Tracker Phase 07 livré ✅ · Boîte à outils 6 prismes livré dans Calibrage ✅
+      </div>
+    </div>
+
+    <h3>À décider — Prochaine session</h3>
+    <div class="callout callout-info">
+      Quel est le premier cas d'usage pour la démo partenaires ? (Rapport hebdo Boussole / Lettre FNE / Veille pro)<br>
+      Quand contacter Richard Hanna ?<br>
+      Clusters 2–6 : documenter Bihouix, Citton, Charbonnier, Gorz dans Le Filtre avant manifeste ?
+    </div>
+  </section>
+
+  <!-- §18 -->
+  <section class="section" id="s18">
+    <div class="section-num">§18</div>
+    <h2>Carnet de bord</h2>
+    <p class="section-sub">Signaux faibles sur l'outil lui-même, pas sur la veille. Objectif : une ligne par session de travail.</p>
+
+    <div class="item-list">
+      <div class="item-row">
+        <div class="item-stripe stripe-muted"></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title" style="font-family:var(--mono);font-size:11px;color:var(--muted)">14 / 05</span></div>
+          <div class="item-desc">Le cluster a fait émerger "captation" et "attention" comme cluster fort sur 3 newsletters distinctes. Vrai signal vs artefact d'un même article cité ailleurs ?</div>
+        </div>
+      </div>
+      <div class="item-row">
+        <div class="item-stripe stripe-muted"></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title" style="font-family:var(--mono);font-size:11px;color:var(--muted)">15 / 05</span></div>
+          <div class="item-desc">La thèse "carte des publics" pour les 4 voix : non formulée dans les sources, émergée de la combinaison. Confirmation que l'Agent ④ fait son travail.</div>
+        </div>
+      </div>
+      <div class="item-row">
+        <div class="item-stripe stripe-green"></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title" style="font-family:var(--mono);font-size:11px;color:var(--muted)">16 / 05</span></div>
+          <div class="item-desc">La méthode Lecture Active : son vrai apport n'est pas la prise de notes mais la coupure entre copier, reformuler, réagir — trois gestes cognitifs distincts qui empêchent l'illusion d'apprentissage passif. Logique à intégrer comme contrainte UX dans Le Filtre (les 3 champs sont séparés, pas un bloc libre).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+  <p style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;padding-bottom:20px">
+    Le Filtre v0.2 · Document interne · Mis à jour le 15 mai 2026 · Local-first, sobre, open-source visé.
+  </p>
+
+</main>
+
+<script>
+  // Highlight active TOC link on scroll
+  const links = document.querySelectorAll('.toc-link');
+  const sections = document.querySelectorAll('.section');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const match = document.querySelector(`.toc-link[href="#${e.target.id}"]`);
+        if (match) match.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

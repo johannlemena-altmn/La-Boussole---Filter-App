@@ -1,0 +1,19 @@
+SHIFT PROJECT — Agriculture & Numérique : sobriété systémique (PTEF 2026)
+
+Source : Réussir dans l'incertitude, Shift Project, avril 2026.
+URL : https://theshiftproject.org/app/uploads/2026/04/Reussir-dans-lincertitude-Integral-version-DEF.pdf
+
+TRANSFORMER LA GESTION DE L'AZOTE (Corentin Biardeau)
+Objectif : réduire de 60% l'usage des engrais azotés de synthèse, atteindre 3 Mha de légumineuses en 2050. Conditions : adaptation du réseau national de silos aux légumineuses, sélection génétique pour la résilience climatique, sécurisation des débouchés via la restauration collective. Ruptures tech : fixation symbiotique, outils d'aide à la décision (N-tester).
+
+TRANSITION VERS DES SYSTÈMES D'ÉLEVAGES RÉSILIENTS (Thomas Robert)
+Objectif : réduire le cheptel bovin de 30% à 70% d'ici 2050 pour abaisser les émissions de méthane, tout en préservant l'élevage extensif. Conditions : revalorisation des revenus agricoles, amélioration des conditions de travail, reconnexion spatiale polyculture-élevage. Ruptures tech : sélection génétique "bas méthane", additifs alimentaires (algues).
+
+MAÎTRISER LE DÉPLOIEMENT DES CENTRES DE DONNÉES (Maxime Efoui-Hess)
+Objectif : limiter la consommation électrique des data centers à 40 TWh en 2050 pour éviter les conflits d'usages électriques. Conditions : priorisation politique des raccordements au réseau, valorisation obligatoire de la chaleur fatale, rapatriement des usages hébergés à l'étranger. Ruptures tech : IA générative (facteur de risque identifié), serveurs haute densité, refroidissement liquide.
+
+NOTE CRITIQUE SUR LE NUMÉRIQUE
+L'IA générative est explicitement identifiée comme un facteur de risque majeur pour la sobriété numérique dans le scénario de transition. Le chantier "centres de données" est le seul du PTEF qui cite une technologie émergente comme facteur aggravant plutôt que comme levier de décarbonation. Signal faible important pour les acteurs du numérique.
+
+PRÉSERVER ET ÉTENDRE LES PUITS DE CARBONE (Adrien Fauste-Gay)
+Objectif : maintenir un puits de 30 MtCO2e/an en forêt + restaurer le puits agricole. Conditions : adaptation des essences au réchauffement, lutte contre le dépérissement (scolytes, incendies), arrêt de l'artificialisation des sols. Ruptures tech : agroforesterie, boisement assisté, bois-matériau long terme.

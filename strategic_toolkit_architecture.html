@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stratégie Ancrée — Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0c09;
+    --bg2: #161410;
+    --bg3: #1f1d19;
+    --card: #252219;
+    --border: #2e2b23;
+    --text: #ede8de;
+    --muted: #7a7468;
+    --green: #6e9e72;
+    --green-dim: #2d4030;
+    --terra: #c4714f;
+    --terra-dim: #3d2318;
+    --gold: #c9a84c;
+    --gold-dim: #3a2e12;
+    --blue: #5b89a6;
+    --blue-dim: #1a2d3a;
+    --purple: #8b6fa8;
+    --purple-dim: #2a1f38;
+    --cream: #f0ebe0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(110,158,114,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--cream);
+    margin-bottom: 12px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--green);
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  .vs-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 8px 14px;
+    background: var(--terra-dim);
+    border: 1px solid var(--terra);
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--terra);
+    letter-spacing: 1px;
+  }
+
+  /* ─── SECTION HEADERS ─── */
+  .section {
+    padding: 48px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--cream);
+  }
+
+  /* ─── DIFFERENCIATEURS ─── */
+  .diff-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .diff-header {
+    padding: 14px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .diff-header.os { background: #1a1a1a; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .diff-header.j { background: var(--green-dim); color: var(--green); border-bottom: 1px solid var(--border); }
+
+  .diff-row {
+    display: contents;
+  }
+
+  .diff-cell {
+    padding: 14px 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .diff-cell.os { color: var(--muted); background: var(--bg2); border-right: 1px solid var(--border); }
+  .diff-cell.j { color: var(--text); background: var(--card); }
+  
+  .diff-cell strong { color: var(--green); }
+
+  /* ─── COUCHE MÉTA ─── */
+  .meta-band {
+    background: var(--purple-dim);
+    border: 1px solid var(--purple);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+
+  .meta-band .meta-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--purple);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .meta-band p { font-size: 13px; color: #c4bdd6; line-height: 1.6; }
+
+  .meta-pillars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .meta-pill {
+    padding: 4px 10px;
+    background: rgba(139,111,168,0.15);
+    border: 1px solid rgba(139,111,168,0.4);
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--purple);
+  }
+
+  /* ─── MODULES ─── */
+  .modules-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .module-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .module-card:hover { border-color: var(--muted); }
+  .module-card.active { border-color: var(--gold); }
+
+  .module-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+  }
+
+  .module-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 24px;
+  }
+
+  .module-accent {
+    width: 4px;
+    height: 36px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .module-title-block { flex: 1; }
+  .module-title-block h3 { font-size: 15px; margin-bottom: 2px; }
+  .module-title-block .module-sub { font-size: 12px; color: var(--muted); }
+
+  .module-toggle {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+
+  .module-card.active .module-toggle { transform: rotate(90deg); color: var(--gold); }
+
+  .module-body {
+    display: none;
+    padding: 0 20px 20px 64px;
+    border-top: 1px solid var(--border);
+    margin-top: -1px;
+  }
+
+  .module-card.active .module-body { display: block; }
+
+  .tools-list {
+    margin: 14px 0 0;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+  }
+
+  .tools-list li {
+    font-size: 12px;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .tools-list li::before {
+    content: '→';
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .sources {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .source-tag {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── COUCHES ─── */
+  .layers-stack {
+    display: grid;
+    gap: 16px;
+  }
+
+  .layer-card {
+    border-radius: 8px;
+    padding: 20px 24px;
+    border: 1px solid;
+  }
+
+  .layer-card.forge { background: var(--terra-dim); border-color: var(--terra); }
+  .layer-card.diffusion { background: var(--gold-dim); border-color: var(--gold); }
+  .layer-card.offre { background: var(--blue-dim); border-color: var(--blue); }
+
+  .layer-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .layer-card.forge .layer-name { color: var(--terra); }
+  .layer-card.diffusion .layer-name { color: var(--gold); }
+  .layer-card.offre .layer-name { color: var(--blue); }
+
+  .layer-title { font-size: 18px; margin-bottom: 8px; }
+  .layer-desc { font-size: 13px; color: rgba(240,235,224,0.7); line-height: 1.6; margin-bottom: 12px; }
+
+  .layer-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .layer-item {
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ─── ROADMAP ─── */
+  .roadmap {
+    display: grid;
+    gap: 0;
+    position: relative;
+  }
+
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 11px; top: 20px; bottom: 20px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .road-step {
+    display: flex;
+    gap: 20px;
+    padding: 16px 0;
+    position: relative;
+  }
+
+  .road-dot {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--green);
+    background: var(--bg);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--green);
+    position: relative;
+    z-index: 1;
+    margin-top: 2px;
+  }
+
+  .road-content h4 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream);
+    margin-bottom: 4px;
+  }
+
+  .road-content p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 40px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  footer p {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="label">Document de conception · v0.1</div>
+  <h1>Stratégie <em>Ancrée</em></h1>
+  <p class="subtitle">Un système de stratégie tout-terrain relu à travers un prisme régénératif et systémique — avec une couche épistémologique comme fondation.</p>
+  <div class="vs-badge">
+    ≠ Overnight Strategist — même territoire, paradigme radicalement différent
+  </div>
+</header>
+
+<!-- DIFFÉRENCIATEURS -->
+<div class="section">
+  <div class="section-label">01 — Positionnement</div>
+  <h2>Ce qui change fondamentalement</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:24px;max-width:560px;">Pas juste un toolkit "vert". Une refonte de la grammaire même de la pensée stratégique.</p>
+
+  <div class="diff-grid">
+    <div class="diff-header os">Overnight Strategist</div>
+    <div class="diff-header j">Stratégie Ancrée</div>
+
+    <div class="diff-cell os">Part du problème business</div>
+    <div class="diff-cell j"><strong>Part de l'épistémologie</strong> — "comment je sais ce que je sais ?"</div>
+
+    <div class="diff-cell os">50 frameworks comme outils isolés</div>
+    <div class="diff-cell j"><strong>Une grammaire cohérente</strong> — les outils se parlent entre eux</div>
+
+    <div class="diff-cell os">Stratégie = croissance + impact</div>
+    <div class="diff-cell j"><strong>Stratégie = valeur régénératrice</strong>, la croissance est une variable parmi d'autres</div>
+
+    <div class="diff-cell os">Consultant-centré, top-down</div>
+    <div class="diff-cell j"><strong>Intelligence collective by design</strong> — décision avec et non pour</div>
+
+    <div class="diff-cell os">Présente tout avec confiance</div>
+    <div class="diff-cell j"><strong>F/I/V/U rend l'incertitude visible</strong> — honnêteté épistémique</div>
+
+    <div class="diff-cell os">Ignore le corps du stratège</div>
+    <div class="diff-cell j"><strong>OSCAR + Spinoza</strong> — le stratège est corporel, pas juste cérébral</div>
+  </div>
+</div>
+
+<!-- COUCHE MÉTA -->
+<div class="section">
+  <div class="section-label">02 — Couche transversale</div>
+  <h2>La Fondation Épistémique</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:24px;max-width:560px;">Cette couche s'applique à <em>tous</em> les modules. C'est ce qui différencie une "boîte à outils" d'un <em>système de pensée</em>.</p>
+
+  <div class="meta-band">
+    <div class="meta-label">Module 0 — Permanent</div>
+    <h3 style="margin-bottom:8px;font-size:17px;">Hygiène Cognitive &amp; Épistémique</h3>
+    <p>Avant toute stratégie, clarifier <em>depuis où</em> on pense. Distinguer ce qu'on sait, ce qu'on interprète, ce qu'on valorise, et ce qu'on ignore. Réguler ses propres affects pour ne pas les confondre avec de l'analyse.</p>
+    <div class="meta-pillars">
+      <span class="meta-pill">F/I/V/U</span>
+      <span class="meta-pill">OSCAR</span>
+      <span class="meta-pill">Spinoza — Affects</span>
+      <span class="meta-pill">Ladder of Inference</span>
+      <span class="meta-pill">Conatus</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODULES -->
+<div class="section">
+  <div class="section-label">03 — Architecture modulaire</div>
+  <h2>7 Modules, 1 Système</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:28px;max-width:560px;">Chaque module est autonome mais s'inscrit dans une progression. Cliquer pour déplier.</p>
+
+  <div class="modules-grid" id="modules">
+
+    <!-- M1 -->
+    <div class="module-card" onclick="toggle(this)">
+      <div class="module-header">
+        <span class="module-num">M1</span>
+        <div class="module-accent" style="background:var(--green)"></div>
+        <div class="module-title-block">
+          <h3>Ancrage</h3>
+          <span class="module-sub">Clarifier sa position et son pourquoi</span>
+        </div>
+        <span class="module-toggle">›</span>
+      </div>
+      <div class="module-body">
+        <ul class="tools-list">
+          <li>Conatus (Spinoza) — qu'est-ce qui cherche à persévérer dans cette situation ?</li>
+          <li>Logothérapie (Frankl) — le sens comme boussole stratégique</li>
+          <li>Cartographie valeurs / intérêts / positions</li>
+          <li>Où suis-je dans le système ? (acteur, transformateur, témoin)</li>
+          <li>Mandat réel vs mandat déclaré</li>
+        </ul>
+        <div class="sources">
+          <span class="source-tag" style="color:var(--purple);background:var(--purple-dim);border-color:rgba(139,111,168,0.3)">Spinoza / Frankl</span>
+          <span class="source-tag" style="color:var(--green);background:var(--green-dim);border-color:rgba(110,158,114,0.3)">Regen School</span>
+          <span class="source-tag" style="color:var(--muted);background:var(--card);border-color:var(--border)">Projet Z</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- M2 -->
+    <div class="module-card" onclick="toggle(this)">
+      <div class="module-header">
+        <span class="module-num">M2</span>
+        <div class="module-accent" style="background:var(--blue)"></div>
+        <div class="module-title-block">
+          <h3>Lecture Systémique</h3>
+          <span class="module-sub">Comprendre le terrain réel</span>
+        </div>
+        <span class="module-toggle">›</span>
+      </div>
+      <div class="module-body">
+        <ul class="tools-list">
+          <li>Pensée systémique — boucles de rétroaction, leviers, archétypes (Donella Meadows)</li>
+          <li>Cartographie des parties prenantes (pouvoir / intérêt / valeurs)</li>
+          <li>Analyse des récits dominants (Boussole des Récits)</li>
+          <li>PESTEL régénératif — frontières planétaires comme contraintes réelles</li>
+          <li>Iceberg systémique (événements → patterns → structures → modèles mentaux)</li>
+          <li>Forces en présence et champs de tension</li>
+        </ul>
+        <div class="sources">
+          <span class="source-tag" style="color:var(--blue);background:var(--blue-dim);border-color:rgba(91,137,166,0.3)">Meadows / Systémique</span>
+          <span class="source-tag" style="color:var(--green);background:var(--green-dim);border-color:rgba(110,158,114,0.3)">Boussole des Récits</span>
+          <span class="source-tag" style="color:var(--terra);background:var(--terra-dim);border-color:rgba(196,113,79,0.3)">FNE / Sobriété</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- M3 -->
+    <div class="module-card" onclick="toggle(this)">
+      <div class="module-header">
+        <span class="module-num">M3</span>
+        <div class="module-accent" style="background:var(--terra)"></div>
+        <div class="module-title-block">
+          <h3>Définition du Vrai Problème</h3>
+          <span class="module-sub">Voir sous la surface</span>
+        </div>
+        <span class="module-toggle">›</span>
+      </div>
+      <div class="module-body">
+        <ul class="tools-list">
+          <li>F/I/V/U appliqué au diagnostic — décoder le problème présenté</li>
+          <li>Distinguer symptôme / cause / structure systémique</li>
+          <li>Reformulation : le problème à l'intérieur du problème</li>
+          <li>Les "questions interdites" — ce que personne ne veut vraiment voir</li>
+          <li>Tension urgence perçue vs importance réelle</li>
+          <li>Reframe stratégique (changer le cadre, pas juste la solution)</li>
+        </ul>
+        <div class="sources">
+          <span class="source-tag" style="color:var(--purple);background:var(--purple-dim);border-color:rgba(139,111,168,0.3)">F/I/V/U</span>
+          <span class="source-tag" style="color:var(--green);background:var(--green-dim);border-color:rgba(110,158,114,0.3)">Regen School</span>
+          <span class="source-tag" style="color:var(--muted);background:var(--card);border-color:var(--border)">Terrain Glaaster</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- M4 -->
+    <div class="module-card" onclick="toggle(this)">
+      <div class="module-header">
+        <span class="module-num">M4</span>
+        <div class="module-accent" style="background:var(--gold)"></div>
+        <div class="module-title-block">
+          <h3>Design Stratégique</h3>
+          <span class="module-sub">Concevoir des réponses à la hauteur du système</span>
+        </div>
+        <span class="module-toggle">›</span>
+      </div>
+      <div class="module-body">
+        <ul class="tools-list">
+          <li>Low-tech first / sobriété comme principe de design (pas une contrainte)</li>
+          <li>12 leviers systémiques de Meadows (du plus faible au plus puissant)</li>
+          <li>Innovation régénératrice vs disruptive — créer sans détruire</li>
+          <li>Cartographie des coalitions et alliances possibles</li>
+          <li>Scénarios de transition (chemin, pas juste destination)</li>
+          <li>Innovation Sweet Spot — désirable / faisable / régénératif</li>
+          <li>Stratégie de niche vs stratégie de diffusion</li>
+        </ul>
+        <div class="sources">
+          <span class="source-tag" style="color:var(--green);background:var(--green-dim);border-color:rgba(110,158,114,0.3)">Regen School</span>
+          <span class="source-tag" style="color:var(--terra);background:var(--terra-dim);border-color:rgba(196,113,79,0.3)">FNE</span>
+          <span class="source-tag" style="color:var(--blue);background:var(--blue-dim);border-color:rgba(91,137,166,0.3)">Zeliq / Glaaster</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- M5 -->
+    <div class="module-card" onclick="toggle(this)">
+      <div class="module-header">
+        <span class="module-num">M5</span>
+        <div class="module-accent" style="background:var(--purple)"></div>
+        <div class="module-title-block">
+          <h3>Narration &amp; Sens</h3>
+          <span class="module-sub">Rendre l'invisible visible</span>
+        </div>
+        <span class="module-toggle">›</span>
+      </div>
+      <div class="module-body">
+        <ul class="tools-list">
+          <li>Point de Vue Stratégique (POV) — construire une perspective singulière et défendable</li>
+          <li>Storytelling de transition — récit qui ouvre vs récit qui clôture</li>
+          <li>Voyage du Héros (Campbell) appliqué au changement systémique</li>
+          <li>Tribunal des Évidences — mise en récit épistémique à voix multiples</li>
+          <li>Logothérapie narrative — le sens comme moteur d'adhésion</li>
+          <li>Rhétorique honnête — persuader sans manipuler (Viktorovitch)</li>
+        </ul>
+        <div class="sources">
+          <span class="source-tag" style="color:var(--purple);background:var(--purple-dim);border-color:rgba(139,111,168,0.3)">Campbell / Frankl</span>
+          <span class="source-tag" style="color:var(--muted);background:var(--card);border-color:var(--border)">Tribunal des Évidences</span>
+          <span class="source-tag" style="color:var(--green);background:var(--green-dim);border-color:rgba(110,158,114,0.3)">Regen / Rhétorique</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- M6 -->
+    <div class="module-card" onclick="toggle(this)">
+      <div class="module-header">
+        <span class="module-num">M6</span>
+        <div class="module-accent" style="background:var(--blue)"></div>
+        <div class="module-title-block">
+          <h3>Décision Collective</h3>
+          <span class="module-sub">Décider avec, et non pour</span>
+        </div>
+        <span class="module-toggle">›</span>
+      </div>
+      <div class="module-body">
+        <ul class="tools-list">
+          <li>Intelligence collective (Moussaid) — structurer le débat pour amplifier la sagesse</li>
+          <li>Buy-in vs adhésion profonde — la différence change tout</li>
+          <li>Éthique de la décision (Spinoza) — raison et affects en dialogue</li>
+          <li>Gouvernance participative — qui décide, comment, avec quels garde-fous</li>
+          <li>Gestion productive du désaccord (F/I/V/U en atelier)</li>
+          <li>Asymétries de pouvoir — les nommer pour les gérer</li>
+        </ul>
+        <div class="sources">
+          <span class="source-tag" style="color:var(--blue);background:var(--blue-dim);border-color:rgba(91,137,166,0.3)">Moussaid / IC</span>
+          <span class="source-tag" style="color:var(--purple);background:var(--purple-dim);border-color:rgba(139,111,168,0.3)">Spinoza</span>
+          <span class="source-tag" style="color:var(--muted);background:var(--card);border-color:var(--border)">Glaaster / Terrain</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- M7 -->
+    <div class="module-card" onclick="toggle(this)">
+      <div class="module-header">
+        <span class="module-num">M7</span>
+        <div class="module-accent" style="background:var(--terra)"></div>
+        <div class="module-title-block">
+          <h3>Implémentation &amp; Apprentissage</h3>
+          <span class="module-sub">Agir avec humilité</span>
+        </div>
+        <span class="module-toggle">›</span>
+      </div>
+      <div class="module-body">
+        <ul class="tools-list">
+          <li>OKR adapté à la transition — ambitions qui ne détruisent pas</li>
+          <li>Expérimentation itérative — la stratégie comme hypothèse, pas prescription</li>
+          <li>Indicateurs vivants — bien-être, résilience, régénération (pas que KPI financiers)</li>
+          <li>Boucles d'apprentissage rapides (test → retour → ajustement)</li>
+          <li>Résilience organisationnelle — anticiper le chaos</li>
+          <li>Capitalisation et mémoire stratégique</li>
+        </ul>
+        <div class="sources">
+          <span class="source-tag" style="color:var(--green);background:var(--green-dim);border-color:rgba(110,158,114,0.3)">Regen School</span>
+          <span class="source-tag" style="color:var(--terra);background:var(--terra-dim);border-color:rgba(196,113,79,0.3)">Glaaster / Zeliq</span>
+          <span class="source-tag" style="color:var(--muted);background:var(--card);border-color:var(--border)">Terrain</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 3 COUCHES -->
+<div class="section">
+  <div class="section-label">04 — Les 3 couches d'usage</div>
+  <h2>Un Même Contenu, 3 Profondeurs</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:28px;max-width:560px;">Chaque module existe en 3 versions selon l'usage. Le contenu est le même ; la forme et la densité changent.</p>
+
+  <div class="layers-stack">
+
+    <div class="layer-card forge">
+      <div class="layer-name">Couche 1 — Forge</div>
+      <h3 class="layer-title">L'Atelier Personnel</h3>
+      <p class="layer-desc">Tes fiches de référence denses, tes templates de pensée rapide, ton journal stratégique. Usage : missions consulting, BAPEC, Glaaster, décisions perso. Pas destiné à être partagé tel quel.</p>
+      <div class="layer-items">
+        <span class="layer-item">Fiches A4 densifiées</span>
+        <span class="layer-item">Journal stratégique</span>
+        <span class="layer-item">Templates Notion</span>
+        <span class="layer-item">Check-lists terrain</span>
+        <span class="layer-item">Prompts Claude</span>
+      </div>
+    </div>
+
+    <div class="layer-card diffusion">
+      <div class="layer-name">Couche 2 — Diffusion</div>
+      <h3 class="layer-title">La Ressource Partageable</h3>
+      <p class="layer-desc">Contenu éducatif vulgarisé — style OS mais avec ta voix et ton prisme. Fiches visuelles, posts LinkedIn/Instagram, formats atelier/facilitation. S'insère dans l'écosystème Projet Z.</p>
+      <div class="layer-items">
+        <span class="layer-item">Fiches visuelles (Canva/Figma)</span>
+        <span class="layer-item">Contenu réseaux</span>
+        <span class="layer-item">Guides d'atelier</span>
+        <span class="layer-item">Mini-newsletters</span>
+        <span class="layer-item">Fiches "concept en 1 page"</span>
+      </div>
+    </div>
+
+    <div class="layer-card offre">
+      <div class="layer-name">Couche 3 — Offre</div>
+      <h3 class="layer-title">Le Produit / L'Accompagnement</h3>
+      <p class="layer-desc">Programme structuré, toolkit téléchargeable, formation ou accompagnement consulting. La couche qui génère de la valeur économique. Se construit en dernier, quand les couches 1 et 2 sont solides.</p>
+      <div class="layer-items">
+        <span class="layer-item">Guide téléchargeable</span>
+        <span class="layer-item">Programme en modules</span>
+        <span class="layer-item">Templates Notion packagés</span>
+        <span class="layer-item">Accompagnement consulting</span>
+        <span class="layer-item">Ateliers clients</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ROADMAP DE CONSTRUCTION -->
+<div class="section">
+  <div class="section-label">05 — Workflow de construction</div>
+  <h2>Comment on procède ensemble</h2>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:28px;max-width:560px;">Ordre de priorité pour construire sans s'éparpiller.</p>
+
+  <div class="roadmap">
+
+    <div class="road-step">
+      <div class="road-dot">A</div>
+      <div class="road-content">
+        <h4>Inventaire des contenus existants (Claude Cowork)</h4>
+        <p>Compiler tous tes cours, notes, frameworks, docs Projet Z. Identifier par module ce qui est déjà là — la matière première est probablement à 60–70% disponible.</p>
+      </div>
+    </div>
+
+    <div class="road-step">
+      <div class="road-dot">B</div>
+      <div class="road-content">
+        <h4>Valider l'architecture module par module</h4>
+        <p>Ici, dans cette conversation. Affiner les outils de chaque module, les ordonner, décider de la logique de progression entre eux.</p>
+      </div>
+    </div>
+
+    <div class="road-step">
+      <div class="road-dot">C</div>
+      <div class="road-content">
+        <h4>Rédiger la Couche 1 en premier</h4>
+        <p>Commencer par les fiches Forge (dense, personnel). Elles servent de test terrain immédiat et nourriront naturellement les couches suivantes.</p>
+      </div>
+    </div>
+
+    <div class="road-step">
+      <div class="road-dot">D</div>
+      <div class="road-content">
+        <h4>Adapter en Couche 2 (diffusion)</h4>
+        <p>Pour chaque module validé en Forge, produire la version diffusable. Tester la résonance avec l'écosystème RSE/transition avant de packager.</p>
+      </div>
+    </div>
+
+    <div class="road-step">
+      <div class="road-dot">E</div>
+      <div class="road-content">
+        <h4>Couche 3 — quand les 2 premières sont testées</h4>
+        <p>L'offre se construit sur la preuve, pas sur la promesse. OS a mis 17 ans. Toi tu peux raccourcir en structurant dès le départ — mais ne brûle pas les étapes.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- QUESTION OUVERTE -->
+<div class="section" style="border-bottom:none;">
+  <div class="section-label">06 — Ce qui reste à décider</div>
+  <h2>Questions ouvertes</h2>
+  <div style="display:grid;gap:12px;margin-top:16px;">
+    <div style="padding:16px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:13px;line-height:1.6;">
+      <strong style="color:var(--gold);">Nom du système</strong><br>
+      <span style="color:var(--muted);">"Stratégie Ancrée" est un placeholder. Le nom idéal capte la tension regen/action. Options à explorer : <em>Stratégie Vivante, Le Stratège Enraciné, Terrain Stratégique, Architecture du Changement…</em></span>
+    </div>
+    <div style="padding:16px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:13px;line-height:1.6;">
+      <strong style="color:var(--gold);">Connexion à Projet Z / Boussole</strong><br>
+      <span style="color:var(--muted);">Ce toolkit est-il une extension de Projet Z, un produit sœur, ou une entité autonome qui s'y réfère ponctuellement ?</span>
+    </div>
+    <div style="padding:16px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:13px;line-height:1.6;">
+      <strong style="color:var(--gold);">Module prioritaire à développer en premier</strong><br>
+      <span style="color:var(--muted);">Lequel est le plus urgent pour toi maintenant — pour tes missions terrain actuelles ?</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Stratégie Ancrée · Architecture v0.1 · Construit avec Johann · 2026</p>
+</footer>
+
+<script>
+  function toggle(card) {
+    const wasActive = card.classList.contains('active');
+    document.querySelectorAll('.module-card.active').forEach(c => c.classList.remove('active'));
+    if (!wasActive) card.classList.add('active');
+  }
+</script>
+</body>
+</html>

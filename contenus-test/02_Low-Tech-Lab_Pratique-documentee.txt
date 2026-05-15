@@ -1,0 +1,20 @@
+LOW TECH LAB — Pratique documentée et expérimentation collective
+
+Association créée en 2015 à Concarneau par Corentin de Chatelperron. Aujourd'hui structurée en réseau international avec une trentaine d'antennes locales.
+
+THÈSE CENTRALE
+La low-tech n'est pas un discours, c'est une pratique. Et cette pratique se documente, se partage, se reproduit. D'où le wiki ouvert qui rassemble plusieurs centaines de tutoriels d'objets low-tech, librement accessibles. Trois critères de qualification : utile, accessible, durable.
+
+PRODUCTIONS À CONNAÎTRE
+- Le Wiki Low-Tech Lab (wiki.lowtechlab.org) : tutoriels d'objets et systèmes low-tech.
+- Les expéditions documentées : Nomad of the Seas (catamaran low-tech, 2016-2017), Habitat low-tech (maison expérimentale, 2018-2019), Biosphère (autonomie totale en milieu désertique, 2020-2021), Nomadeland (expédition européenne).
+- Les documentaires correspondants, accessibles en ligne.
+- La Méthodologie Low-tech formalisée à partir de leurs expérimentations.
+
+APPORT POUR LE PROJET
+Le Low Tech Lab est le seul acteur du cluster 1 à pratiquer concrètement, avec une discipline de documentation publique. C'est un modèle pour la posture du Studio : non pas seulement penser et conseiller, mais documenter publiquement les protocoles utilisés, les rendre reproductibles. C'est aussi un partenaire potentiel pour la jambe 2 du modèle vocationnel.
+
+QUESTION OUVERTE
+Succès médiatique fort qui a parfois éclipsé la dimension politique de la low-tech au profit d'une lecture purement technique. À surveiller pour ne pas reproduire ce glissement dans les supports Studio.
+
+SOURCE : Paradigmes_et_Pedagogie_Cluster_1_et_3_v01.md

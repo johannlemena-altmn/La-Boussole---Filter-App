@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Le Filtre — Récupération pile</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0e1a10; color: #c8e6c9; font: 14px/1.6 'JetBrains Mono', ui-monospace, monospace; padding: 32px; }
+  h1 { color: #7bc47f; font-size: 18px; margin-bottom: 24px; }
+  .card { background: #141f15; border: 1px solid #2e4a32; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .card h2 { color: #9bbf9e; font-size: 13px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .stat { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+  .stat .val { color: #7bc47f; font-weight: 600; }
+  .item { border-bottom: 1px solid #1c2e1e; padding: 8px 0; font-size: 12px; }
+  .item:last-child { border-bottom: none; }
+  .item .title { color: #c8e6c9; }
+  .item .meta { color: #4a8e50; font-size: 11px; margin-top: 2px; }
+  button {
+    background: #253d28; color: #7bc47f; border: 1px solid #3a5c3e;
+    padding: 10px 20px; border-radius: 6px; cursor: pointer; font: inherit;
+    font-size: 13px; margin-right: 8px; margin-top: 4px;
+    transition: background .15s;
+  }
+  button:hover { background: #2e4a32; }
+  .empty { color: #4a6e4e; font-style: italic; text-align: center; padding: 24px 0; }
+  #log { background: #0a140a; border: 1px solid #1c2e1e; border-radius: 6px; padding: 12px; font-size: 11px; color: #5a8e5e; max-height: 200px; overflow-y: auto; margin-top: 12px; white-space: pre-wrap; }
+  textarea { width: 100%; background: #0a140a; border: 1px solid #1c2e1e; border-radius: 6px; padding: 12px; color: #9bbf9e; font: 12px 'JetBrains Mono', monospace; resize: vertical; min-height: 120px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>🔍 Le Filtre — Récupération de la pile</h1>
+
+<div class="card" id="status-card">
+  <h2>État du localStorage</h2>
+  <div id="status-content"><div class="empty">Analyse en cours…</div></div>
+</div>
+
+<div class="card" id="items-card" style="display:none">
+  <h2>Items trouvés — <span id="items-count">0</span></h2>
+  <div id="items-list"></div>
+</div>
+
+<div class="card">
+  <h2>Actions</h2>
+  <button onclick="exportJSON()">📋 Copier JSON brut</button>
+  <button onclick="exportTitles()">📝 Copier liste des titres</button>
+  <button onclick="fixAndClear()" style="background:#1a1f0e;color:#c9a84c;border-color:#4a3e1e;">🔧 Corriger la structure</button>
+  <button onclick="clearData()" style="color:#c47050;border-color:#5c2e2e;">🗑 Effacer tout</button>
+  <div id="log"></div>
+</div>
+
+<div class="card" id="inject-card">
+  <h2>Injecter des items manuellement (JSON)</h2>
+  <button onclick="loadTestItems()" style="margin-bottom:10px;background:#1c3a1e;border-color:#4a8e50;color:#7bc47f">⚡ Charger les 10 items test (depuis tes fichiers workspace)</button>
+  <textarea id="inject-area" placeholder='[{"title":"Mon contenu","content":"Texte ici...","url":"","type":"text"}]'></textarea>
+  <br><button onclick="injectItems()" style="margin-top:8px">💉 Injecter dans Le Filtre</button>
+</div>
+
+<script>
+const KEY = 'le-filtre-v0.2';
+const DASH_KEY = 'le-filtre-dashboard-layout-v0.2';
+
+function log(msg) {
+  var el = document.getElementById('log');
+  el.textContent += '[' + new Date().toLocaleTimeString() + '] ' + msg + '\n';
+  el.scrollTop = el.scrollHeight;
+}
+
+function analyse() {
+  var raw = localStorage.getItem(KEY);
+  var el = document.getElementById('status-content');
+
+  if (!raw) {
+    el.innerHTML = '<div class="empty">❌ Aucune donnée trouvée pour <code>' + KEY + '</code><br><br>Cela peut signifier que :<br>• Le navigateur a été changé<br>• Le localStorage a été effacé<br>• La pile n\'a jamais été sauvegardée ici</div>';
+    return;
+  }
+
+  var state;
+  try { state = JSON.parse(raw); } catch(e) {
+    el.innerHTML = '<div class="empty">⚠ Données corrompues : ' + e.message + '</div>';
+    return;
+  }
+
+  var items = state.items || state.stack || [];
+  var html = '';
+  html += '<div class="stat"><span>Clé</span><span class="val">' + KEY + '</span></div>';
+  html += '<div class="stat"><span>Items dans la pile</span><span class="val">' + items.length + '</span></div>';
+  html += '<div class="stat"><span>Analysés</span><span class="val">' + items.filter(function(i){return i.status==='done'||i.result}).length + '</span></div>';
+  html += '<div class="stat"><span>Vue active</span><span class="val">' + (state.view || '—') + '</span></div>';
+  html += '<div class="stat"><span>Taille données</span><span class="val">' + Math.round(raw.length/1024) + ' ko</span></div>';
+  el.innerHTML = html;
+
+  if (items.length > 0) {
+    document.getElementById('items-card').style.display = 'block';
+    document.getElementById('items-count').textContent = items.length;
+    var list = document.getElementById('items-list');
+    list.innerHTML = items.map(function(item, i) {
+      var title = item.title || item.name || item.url || ('Item ' + (i+1));
+      var type  = item.type || item.source || '?';
+      var status = item.status || (item.result ? 'analysé' : 'en attente');
+      var score  = item.result && item.result.score ? ' · score ' + item.result.score : '';
+      return '<div class="item">' +
+        '<div class="title">' + escHtml(String(title).slice(0,80)) + '</div>' +
+        '<div class="meta">[' + type + '] ' + status + score + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  log('✓ ' + items.length + ' items trouvés dans le localStorage');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function exportJSON() {
+  var raw = localStorage.getItem(KEY);
+  if (!raw) { log('❌ Aucune donnée'); return; }
+  navigator.clipboard.writeText(raw).then(function() {
+    log('✓ JSON complet copié dans le presse-papiers (' + Math.round(raw.length/1024) + ' ko)');
+  }).catch(function() {
+    // Fallback : afficher dans une textarea
+    var ta = document.getElementById('inject-area');
+    ta.value = raw;
+    ta.select();
+    log('JSON affiché dans la zone ci-dessous (copie manuelle)');
+  });
+}
+
+function exportTitles() {
+  var raw = localStorage.getItem(KEY);
+  if (!raw) { log('❌ Aucune donnée'); return; }
+  var state = JSON.parse(raw);
+  var items = state.items || state.stack || [];
+  var titles = items.map(function(item, i) {
+    return (i+1) + '. ' + (item.title || item.name || item.url || 'Item '+(i+1));
+  }).join('\n');
+  navigator.clipboard.writeText(titles).then(function() {
+    log('✓ ' + items.length + ' titres copiés');
+  }).catch(function() {
+    var ta = document.getElementById('inject-area');
+    ta.value = titles;
+    log('Titres affichés ci-dessous');
+  });
+}
+
+function fixAndClear() {
+  // Migre les items mal injectés dans state.stack vers state.items, vide state.stack
+  var stateRaw = localStorage.getItem(KEY);
+  if (!stateRaw) { log('❌ Aucune donnée'); return; }
+  var state = JSON.parse(stateRaw);
+  var fromStack = Array.isArray(state.stack) ? state.stack : [];
+  var fromItems = Array.isArray(state.items) ? state.items : [];
+  // Ne migrer que les items ayant un champ "content" (vrais items de contenu)
+  var contentItems = fromStack.filter(function(i) { return i && i.content; });
+  state.items = fromItems.concat(contentItems);
+  state.stack = null; // reset (l'app recréera la config depuis DEFAULTS)
+  localStorage.setItem(KEY, JSON.stringify(state));
+  log('✓ Corrigé : ' + contentItems.length + ' items migrés stack→items. Total : ' + state.items.length + ' items dans state.items');
+  analyse();
+}
+
+function clearData() {
+  if (!confirm('Effacer TOUTE la pile Le Filtre du localStorage ? Cette action est irréversible.')) return;
+  localStorage.removeItem(KEY);
+  localStorage.removeItem(DASH_KEY);
+  log('✓ Données effacées');
+  setTimeout(analyse, 200);
+}
+
+function injectItems() {
+  var raw = document.getElementById('inject-area').value.trim();
+  if (!raw) { log('❌ Zone vide'); return; }
+  var newItems;
+  try { newItems = JSON.parse(raw); } catch(e) { log('❌ JSON invalide : ' + e.message); return; }
+  if (!Array.isArray(newItems)) { log('❌ Doit être un tableau []'); return; }
+
+  var stateRaw = localStorage.getItem(KEY);
+  var state = stateRaw ? JSON.parse(stateRaw) : { items: [], stack: null, manifesto: null, tweaks: null };
+  var existing = state.items || [];
+  state.items = existing.concat(newItems.map(function(item, i) {
+    return Object.assign({ id: 'injected_' + Date.now() + '_' + i, status: 'pending', type: 'text' }, item);
+  }));
+  localStorage.setItem(KEY, JSON.stringify(state));
+  log('✓ ' + newItems.length + ' items injectés dans state.items → recharge Le Filtre.html');
+  analyse();
+}
+
+// Charge les 10 items test depuis le fichier JSON
+async function loadTestItems() {
+  try {
+    var resp = await fetch('./items-test-10.json');
+    var items = await resp.json();
+    document.getElementById('inject-area').value = JSON.stringify(items, null, 2);
+    log('✓ 10 items test chargés dans la zone — clique sur "Injecter dans Le Filtre"');
+  } catch(e) {
+    log('❌ Impossible de charger items-test-10.json : ' + e.message);
+  }
+}
+
+// Lance l'analyse au chargement
+analyse();
+</script>
+</body>
+</html>

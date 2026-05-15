@@ -1,0 +1,30 @@
+LE FILTRE — Blocs Boussole+ et protocoles de veille de Johann
+
+SIX BLOCS BOUSSOLE+ (système de classification)
+
+B1 — RSE / Transition écologique & sociale (🟢 Vert)
+Rapports ADEME, études Shift Project, newsletters ESS/impact, veille règlementaire CEE, BAPEC, Regen School. Fréquence : continue. Projets alimentés : Veille Boussole, Lettre FNE, Studio.
+
+B2 — Épistémologie / Analyse narrative & médias (🔵 Bleu)
+Slow media, analyse du discours, critique des formats, éducation aux médias. Source principale : Time To Sign Off (TTSO). Protocole spécifique : traitement "épistémologie + slow media". Projets alimentés : Boussole des Récits (Projet Z).
+
+B3 — Tech / IA & numérique responsable (🟣 Violet)
+IA générative, sobriété numérique, éthique algorithmique, numérique et transition. Source principale : Hallu World. Protocole : traitement "IA + numérique responsable". Projets alimentés : Veille Boussole (B3), créations vidéo.
+
+B4 — Géopolitique / Socioéconomie (🟡 Jaune)
+Macro-économie, géopolitique des ressources, démocratie et systèmes de gouvernance. Alimenté par : alertes LinkedIn/Twitter, flux Feedly. Projets alimentés : Veille Boussole (B4), Projet D Démocratique.
+
+B5 — Sciences cognitives / Psychologie & comportement (🔴 Rouge)
+Psychologie sociale, biais cognitifs, comportement et transition, pédagogie de la complexité. Projets alimentés : Studio (pédagogie organisationnelle), Boussole des Récits.
+
+B6 — Création / Formats culturels & inspiration éditoriale (🟠 Orange)
+Storytelling, formats longs/courts, storyboards, ligne éditoriale, culture et arts. Source principale : Bien ou bien. Protocole : traitement "inspiration éditoriale". Projets alimentés : YouTube, podcast potentiel, Boussole des Récits.
+
+PROJETS ALIMENTÉS PAR LA VEILLE
+- Veille Boussole : rapports hebdomadaires structurés en 5 blocs thématiques
+- Lettre Sobriété Matières (FNE) : newsletter trimestrielle, matières premières & transition
+- Projet Z / Boussole des Récits : littératie médiatique, framework F/I/V/U
+- Création vidéo (YouTube + réseaux) : formats courts/longs, storyboards
+- BAPEC / Regen School : veille RSE, transition, management innovation
+
+SOURCE : MEMO_Outil_Triage_Contenus_v1.md

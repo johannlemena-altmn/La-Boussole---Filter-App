@@ -1,0 +1,25 @@
+MATRICE IMPACT À 4 NIVEAUX — Pourquoi les indicateurs RSE classiques échouent
+
+TROIS DÉFAUTS STRUCTURELS DES INDICATEURS RSE
+1. Comparaison hypothétique : le contrefactuel (ce qui se serait passé sans l'intervention) est non vérifiable. L'impact "évité" est une construction narrative, pas une mesure.
+2. Unité non vécue : la tonne de CO₂ est une devise abstraite, non ancrée dans une expérience sensible. Elle ne génère pas de représentation partagée, ne produit pas d'engagement.
+3. Périmètre orphelin : l'impact est mesuré en isolation, sans chaîne de conséquences. Un équipement reconditionné "évite" des émissions, mais on ne mesure pas l'effet rebond, le comportement des acheteurs, les effets systémiques sur la filière.
+
+Mobilise : Desrosières (sociologie des statistiques), Espeland & Stevens (incommensurabilité), Boltanski & Thévenot (économies de la grandeur).
+
+GRILLE À QUATRE NIVEAUX NON-AGRÉGÉS (Studio)
+Chaque intervention est mesurée sur quatre niveaux présentés en parallèle, sans tentative d'agrégation :
+
+Niveau 1 — Flux matériels mesurés
+Kg d'équipements détournés de la décharge, durées de vie prolongées (en mois), nombre d'équipements reconditionnés. Vérifiable, auditable, comparable dans le temps.
+
+Niveau 2 — Transformation organisationnelle
+Changement de pratiques d'achat, formation des équipes, intégration de critères durabilité dans les cahiers des charges futurs. Mesuré par entretien, pas par indicateur unique.
+
+Niveau 3 — Effets systémiques
+Prescription de solutions ESS (combien de prestataires ESS référencés), ancrage territorial (emplois locaux maintenus ou créés), signal marché (impact sur les décisions d'autres organisations du secteur).
+
+Niveau 4 — Contribution narrative
+Légitimation d'un modèle sobre dans un secteur, renforcement du discours politique sur la circularité, effet d'exemplarité auprès des pairs.
+
+SOURCE : MEMO_Session_Studio_Architecture_Vision_Prospective_mai2026.md

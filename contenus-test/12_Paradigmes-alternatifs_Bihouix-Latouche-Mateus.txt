@@ -1,0 +1,26 @@
+PARADIGMES ALTERNATIFS AU PRODUCTIVISME — Vue d'ensemble
+
+Note de synthèse issue du cluster 1 de la session thématique (mai 2026).
+
+QUATRE VOIX COMPLÉMENTAIRES
+Ces quatre auteurs critiquent tous le paradigme productiviste, mais selon des angles distincts. Articulées, elles forment un corpus théorique cohérent et défendable, mobilisable dans les trois projets (Studio, Boussole, Démocratique).
+
+1. NAVI RADJOU — L'entrée par la pratique managériale
+Jugaad / innovation frugale. Pont commercial vers le mainstream. Registre : management responsable. Usage : convaincre les clients qui ne liront pas Bihouix.
+
+2. LOW TECH LAB — L'entrée par la pratique documentée
+Utile, accessible, durable. Discipline open source des protocoles. Usage : modèle de posture pour le Studio, partenaire pédagogique potentiel.
+
+3. OLIVIER HAMANT — L'entrée par la biologie du vivant
+Robustesse vs performance, inefficience comme stratégie. Registre : sciences du vivant transposées à l'organisation. Usage : contre-argumentaire au culte de l'optimisation.
+
+4. À COMPLÉTER (clusters 2, 4, 5, 6)
+Les clusters non traités dans cette fiche couvrent : économie politique de la décroissance (Latouche, Kallis), critique de la valeur (Jappe, Anselm Jappe), psychologie de la transition (Renée Lertzman, Per Espen Stoknes), pratiques culturelles alternatives.
+
+TENSION TRANSVERSALE À SURVEILLER
+Ces auteurs sont mobilisés différemment selon les contextes. Radjou peut être récupéré par la croissance verte. Le Low Tech Lab peut être dépolitisé. Hamant peut être instrumentalisé par un discours de "lenteur managériale" sans remise en cause structurelle. Le Studio doit expliciter dans ses supports quelle lecture il en fait et pourquoi.
+
+USAGE DANS LE MANIFESTE DU FILTRE
+Ce corpus théorique fournit le socle de justification du principe ① (sobre, local-first, open-source visé). Il permet de répondre à la question "pourquoi refuser l'optimisation et la scalabilité" avec des arguments ancrés dans la recherche et la pratique, pas seulement dans une posture militante.
+
+SOURCE : Paradigmes_et_Pedagogie_Cluster_1_et_3_v01.md

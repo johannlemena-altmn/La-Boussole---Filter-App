@@ -1,0 +1,17 @@
+DOSSIER app/ — Le Filtre
+========================
+
+Colle ici tous les fichiers .jsx extraits du zip :
+  • app.jsx
+  • engine.jsx
+  • triage.jsx
+  • dashboard.jsx
+  • components.jsx
+  • cluster.jsx
+  • studio.jsx
+  • manifesto.jsx
+  • extractors.jsx
+  • defaults.jsx
+  • tweaks-panel.jsx
+
+Une fois les fichiers copiés ici, lance demarrer.sh

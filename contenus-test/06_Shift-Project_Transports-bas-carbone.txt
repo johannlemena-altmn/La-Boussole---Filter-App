@@ -1,0 +1,22 @@
+SHIFT PROJECT — Transports bas carbone (PTEF 2026)
+
+Source : Réussir dans l'incertitude — Plan de Transformation de l'Économie Française, Shift Project, avril 2026.
+URL : https://theshiftproject.org/app/uploads/2026/04/Reussir-dans-lincertitude-Integral-version-DEF.pdf
+
+DÉPLOYER MASSIVEMENT LE VÉLO (Laura Foglia)
+Objectif : 30 à 50% des déplacements quotidiens à vélo. Conditions : réseau continu de pistes cyclables sécurisées, stationnement sécurisé généralisé, apaisement de la circulation automobile. Ruptures tech : VAE, vélos cargos, vélomobiles.
+
+ÉTENDRE LES TRANSPORTS EN COMMUN (Laura Foglia)
+Objectif : doubler les km parcourus d'ici 2050, Grand Paris Express + 26 SERM. Conditions : vision nationale pour prioriser les projets efficaces, sécurisation financière long terme, coordination inter-territoriale.
+
+MASSIFIER LE TRAIN PASSAGERS (Béatrice Jarrige)
+Objectif : tripler les voyages en train d'ici 2050. Conditions : modernisation et régénération du réseau ferré vieillissant, TGV M. Ruptures tech : TGV M (plus capacitaire et sobre), ERTMS (signalisation européen).
+
+RELANCE DU FRET FERROVIAIRE (Reuben Fisher)
+Objectif : 30% de part modale pour le rail d'ici 2050 (×4 l'efficacité par rapport à la route). Ruptures tech : attelage digital automatique (DAC), transport combiné.
+
+ÉLECTRIFIER LES POIDS LOURDS (Reuben Fisher)
+Objectif : 100% de ventes de poids lourds électriques en 2050, réduire les 27 Mt CO2e du fret routier. Conditions : réduction du surcoût à l'achat (camions 3× plus chers), déploiement bornes haute puissance (MCS). Ruptures tech : Megawatt Charging System, batteries stationnaires.
+
+DÉCARBONER LE SECTEUR AÉRIEN (Béatrice Jarrige)
+Objectif : réduire le trafic aérien (sobriété) + 70% de carburants durables (SAF) d'ici 2050. Conditions : maintien de la réglementation RefuelEU, limitation des extensions aéroportuaires. Ruptures tech : bioSAF et e-SAF, moteur Open Fan (RISE).

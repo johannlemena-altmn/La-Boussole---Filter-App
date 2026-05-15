@@ -1,0 +1,22 @@
+SHIFT PROJECT — Logement & Énergie (PTEF 2026)
+
+Source : Réussir dans l'incertitude, Shift Project, avril 2026.
+URL : https://theshiftproject.org/app/uploads/2026/04/Reussir-dans-lincertitude-Integral-version-DEF.pdf
+
+MASSIFIER LA RÉNOVATION DES LOGEMENTS (Rémi Babut)
+Objectif : 800 000 à 1 000 000 rénovations globales par an d'ici 2040-2050. Conditions : sanctuarisation des aides publiques, montée en compétence massive des artisans (200 000 emplois à créer), généralisation de l'accompagnement (MonAccompagnateurRénov). Ruptures tech : DPE opposable, industrialisation de la rénovation, matériaux isolants biosourcés.
+
+DÉPLOYER LES POMPES À CHALEUR (Rémi Babut)
+Objectif : 1,5 million de PAC par an d'ici 2030, remplacer les chaudières gaz et fioul. Conditions : maintien d'un écart de prix favorable électricité/gaz, stabilité des aides MaPrimeRénov, formation de dizaines de milliers d'installateurs. Ruptures tech : PAC air-eau et air-air, fluides frigorigènes à bas PRG (R290, Propane).
+
+PROLONGER ET RELANCER LE NUCLÉAIRE (Nicolas Raillard)
+Objectif : prolonger le parc historique à 70 ans + 14 EPR2 d'ici 2050. Conditions : recrutement massif (100 000 emplois), accord européen sur le financement, standardisation industrielle pour réduire les délais. Ruptures tech : EPR2, SMR, Recuit de cuve.
+
+DÉVELOPPER L'ÉOLIEN ET LE PHOTOVOLTAÏQUE (Marie Aubert)
+Objectif : 5 GW/an de solaire + 2 GW/an d'éolien terrestre/mer. Conditions : levée des blocages administratifs (DREAL/DDT), arbitrage contraintes radar/défense, accélération des raccordements. Ruptures tech : PV haute performance, éolien flottant, agrivoltaïsme, smart grids.
+
+DÉPLOYER LES BIOÉNERGIES DE MANIÈRE SOUTENABLE (Clémence Vorreux)
+Objectif : 120 TWh de biogaz + 90 TWh de biocarburants d'ici 2050, sans conflits d'usages. Ruptures tech : méthanisation par injection, pyrogazéification.
+
+ACIER BAS-CARBONE + HYDROGÈNE
+Acier : 11,8 Mt bas carbone en 2050, sortir du charbon en sidérurgie primaire (H2-DRI, four à arc électrique). Hydrogène : 4,5 GW d'électrolyse en 2030 pour l'industrie lourde et les e-fuels.
