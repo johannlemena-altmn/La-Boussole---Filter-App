@@ -1,7 +1,7 @@
 // components.jsx — Sidebar, Setup, Capture, Analyse
 /* global React */
 
-const {
+var {
   useState,
   useEffect,
   useMemo,

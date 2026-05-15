@@ -1,7 +1,7 @@
 // components.jsx — Sidebar, Setup, Capture, Analyse
 /* global React */
 
-const { useState, useEffect, useMemo, useRef, useCallback } = React;
+var { useState, useEffect, useMemo, useRef, useCallback } = React;
 
 // ─────── BLOC CHIP ───────
 function BlocChip({ blocId, label, withDot = true }) {

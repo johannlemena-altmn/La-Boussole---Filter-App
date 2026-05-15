@@ -1,7 +1,7 @@
 // frameworks.jsx — Boîte à outils prismes (6 frameworks)
 /* global React */
 
-const { useState, useMemo } = React;
+var { useState, useMemo } = React;
 
 const PRISME_KEY = 'lf-prisme-v1';
 

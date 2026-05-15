@@ -1,7 +1,7 @@
 // tracker.jsx — Le Filtre v0.2 — Phase 07 : Projets & Suivi
 /* global React */
 
-const { useState, useEffect, useRef, useCallback } = React;
+var { useState, useEffect, useRef, useCallback } = React;
 
 // ─── Gamification — niveaux de maturité ───────────────────────────────
 const MATURITY_LEVELS = [

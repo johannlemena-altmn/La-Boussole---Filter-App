@@ -1,7 +1,7 @@
 // app.jsx — Le Filtre v0.2 — main app
 /* global React, ReactDOM */
 
-const {
+var {
   useState,
   useEffect,
   useRef,

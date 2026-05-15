@@ -1,7 +1,7 @@
 // frameworks.jsx — Boîte à outils prismes (6 frameworks)
 /* global React */
 
-const {
+var {
   useState,
   useMemo
 } = React;

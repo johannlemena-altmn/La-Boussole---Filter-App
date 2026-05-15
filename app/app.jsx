@@ -1,7 +1,7 @@
 // app.jsx — Le Filtre v0.2 — main app
 /* global React, ReactDOM */
 
-const { useState, useEffect, useRef, useCallback, useMemo } = React;
+var { useState, useEffect, useRef, useCallback, useMemo } = React;
 const {
   Manifesto, Sidebar, SetupView, CaptureView, AnalyseView, TriageView,
   DashboardView, StudioView, TrackerView,
