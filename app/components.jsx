@@ -244,9 +244,188 @@ function SetupView({ projects, setProjects, blocs, setBlocs, sources, setSources
   );
 }
 
+// ─────── RSS CAPTURE PANEL ───────
+function RssCapturePanel({ addItem, sources, toast }) {
+  const [feedUrl, setFeedUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [feedItems, setFeedItems] = useState([]);
+  const [feedTitle, setFeedTitle] = useState("");
+  const [selected, setSelected] = useState(new Set());
+  const [error, setError] = useState(null);
+
+  // Flux RSS rapides (depuis les sources configurées + suggestions)
+  const quickFeeds = [
+    { name: "Substack (exemple)", url: "", placeholder: true },
+    { name: "Podcasts RSS", url: "", placeholder: true },
+  ];
+
+  async function fetchFeed(url) {
+    if (!url.trim()) return;
+    setLoading(true); setError(null); setFeedItems([]); setSelected(new Set());
+    try {
+      // CORS proxy pour accéder aux flux RSS depuis le navigateur
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url.trim())}`;
+      const res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error("Flux inaccessible (code " + res.status + ")");
+      const text = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, "application/xml");
+
+      // Detect RSS vs Atom
+      const isAtom = !!doc.querySelector("feed");
+      const title = doc.querySelector("channel > title, feed > title")?.textContent || url;
+      setFeedTitle(title);
+
+      let entries = [];
+      if (isAtom) {
+        entries = Array.from(doc.querySelectorAll("entry")).slice(0, 20).map(e => ({
+          id: e.querySelector("id")?.textContent || Math.random().toString(),
+          title: e.querySelector("title")?.textContent || "(sans titre)",
+          date: e.querySelector("published,updated")?.textContent || "",
+          summary: e.querySelector("summary,content")?.textContent?.slice(0, 300) || "",
+          link: e.querySelector("link")?.getAttribute("href") || "",
+        }));
+      } else {
+        entries = Array.from(doc.querySelectorAll("item")).slice(0, 20).map(e => ({
+          id: e.querySelector("guid")?.textContent || e.querySelector("link")?.textContent || Math.random().toString(),
+          title: e.querySelector("title")?.textContent || "(sans titre)",
+          date: e.querySelector("pubDate")?.textContent || "",
+          summary: (e.querySelector("description")?.textContent || "").replace(/<[^>]*>/g, "").slice(0, 300),
+          link: e.querySelector("link")?.textContent || "",
+        }));
+      }
+      setFeedItems(entries);
+      if (entries.length === 0) setError("Aucun article trouvé dans ce flux.");
+    } catch(e) {
+      setError("Impossible de lire ce flux : " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function toggleItem(id) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+  const selectAll = () => setSelected(new Set(feedItems.map(i => i.id)));
+  const clearSel  = () => setSelected(new Set());
+
+  function addSelected() {
+    const toAdd = feedItems.filter(i => selected.has(i.id));
+    if (toAdd.length === 0) return;
+    toAdd.forEach(item => {
+      const dateStr = item.date ? new Date(item.date).toLocaleDateString("fr-FR") : "";
+      addItem({
+        text: [
+          `[Titre] ${item.title}`,
+          dateStr ? `[Date] ${dateStr}` : "",
+          item.link ? `[Lien] ${item.link}` : "",
+          "",
+          item.summary ? item.summary : "(Résumé non disponible — analyse le titre et l'URL)",
+        ].filter(Boolean).join("\n"),
+        sourceHint: feedTitle || "Flux RSS",
+        type: "article",
+      });
+    });
+    toast?.(`${toAdd.length} article(s) ajouté(s) à la pile`);
+    setSelected(new Set());
+  }
+
+  return (
+    <div>
+      <div className="panel-head">
+        <div>
+          <div className="panel-title">Social listening · Flux RSS</div>
+          <div className="panel-sub">Substack, podcasts, sites, newsletters. Colle l'URL du flux RSS → sélectionne les articles → empile.</div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+        <input
+          className="input"
+          style={{ flex: 1 }}
+          value={feedUrl}
+          onChange={e => setFeedUrl(e.target.value)}
+          placeholder="https://example.substack.com/feed ou https://site.com/rss"
+          onKeyDown={e => e.key === "Enter" && fetchFeed(feedUrl)}
+        />
+        <button
+          className="btn"
+          onClick={() => fetchFeed(feedUrl)}
+          disabled={loading || !feedUrl.trim()}
+        >
+          {loading ? <span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>◌</span> : "Charger"}
+        </button>
+      </div>
+
+      <div className="small muted" style={{ marginBottom: 12 }}>
+        <strong>Trouver le flux RSS d'une Substack :</strong> ajoute <code>/feed</code> après l'URL principale.
+        Ex : <code>monblog.substack.com/feed</code>
+      </div>
+
+      {error && (
+        <div className="small" style={{ color: "var(--red)", marginBottom: 10 }}>{error}</div>
+      )}
+
+      {feedItems.length > 0 && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <span className="mono small muted" style={{ flex: 1 }}>
+              {feedTitle} · {feedItems.length} articles
+            </span>
+            <button className="btn-inline small" onClick={selectAll}>Tout</button>
+            <span className="muted">·</span>
+            <button className="btn-inline small" onClick={clearSel}>Aucun</button>
+            <button
+              className="btn btn-primary small"
+              onClick={addSelected}
+              disabled={selected.size === 0}
+            >
+              + Empiler ({selected.size})
+            </button>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 320, overflowY: "auto" }}>
+            {feedItems.map(item => (
+              <div
+                key={item.id}
+                className={`item-card ${selected.has(item.id) ? "selected" : ""}`}
+                onClick={() => toggleItem(item.id)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="item-meta">
+                  <span style={{
+                    width: 16, height: 16, borderRadius: 3,
+                    border: "1.5px solid var(--border)",
+                    background: selected.has(item.id) ? "var(--green)" : "transparent",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0, fontSize: 10, color: "#1a2e08"
+                  }}>{selected.has(item.id) ? "✓" : ""}</span>
+                  {item.date && (
+                    <span className="mono small muted">
+                      {new Date(item.date).toLocaleDateString("fr-FR", { day:"numeric", month:"short" })}
+                    </span>
+                  )}
+                </div>
+                <div className="item-title">{item.title}</div>
+                {item.summary && (
+                  <div className="item-preview">{item.summary}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─────── CAPTURE PHASE ───────
 function CaptureView({ items, addItem, removeItem, sources, loadSample, goPrev, goNext, toast }) {
-  const [mode, setMode] = useState("text"); // text | file | link | photo | audio
+  const [mode, setMode] = useState("text"); // text | file | link | photo | audio | rss
   const [text, setText] = useState("");
   const [sourceHint, setSourceHint] = useState("");
   const [type, setType] = useState("newsletter");
@@ -547,6 +726,11 @@ function CaptureView({ items, addItem, removeItem, sources, loadSample, goPrev, 
           <div className="cap-mode-name">Audio</div>
           <div className="cap-mode-desc">Mémo + transcription</div>
         </button>
+        <button className={`cap-mode ${mode === "rss" ? "on" : ""}`} onClick={() => setMode("rss")}>
+          <span className="cap-mode-glyph">⊛</span>
+          <div className="cap-mode-name">Flux RSS</div>
+          <div className="cap-mode-desc">Substack · Podcast · Site</div>
+        </button>
       </div>
 
       <div className="capture-grid">
@@ -802,6 +986,8 @@ function CaptureView({ items, addItem, removeItem, sources, loadSample, goPrev, 
               ))}
             </div>
           )}
+
+          {mode === "rss" && <RssCapturePanel addItem={addItem} sources={sources} toast={toast} />}
         </div>
       </div>
 

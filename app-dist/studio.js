@@ -448,7 +448,74 @@ function Infographic({
     className: "cream"
   }, gardefous[0].title, "."), " ", /*#__PURE__*/React.createElement("span", {
     className: "dim"
-  }, gardefous[0].body))))), /*#__PURE__*/React.createElement("div", {
+  }, gardefous[0].body))))), (() => {
+    const angles = done.filter(i => i.result?.angle_editorial).slice(0, 4);
+    if (!angles.length) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: "14px 20px",
+        borderTop: "1px solid var(--border)"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "info-section-label"
+    }, "\xB7 Angles \xE9ditoriaux \xE0 creuser"), angles.map((it, i) => /*#__PURE__*/React.createElement("div", {
+      key: it.id,
+      style: {
+        display: "flex",
+        gap: 8,
+        marginTop: 8,
+        alignItems: "flex-start"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: `bloc-dot dot-${it.result.bloc_id}`,
+      style: {
+        flexShrink: 0,
+        marginTop: 4
+      }
+    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "small",
+      style: {
+        fontStyle: "italic",
+        color: "var(--green)",
+        lineHeight: 1.4
+      }
+    }, it.result.angle_editorial), it.result.format_potentiel?.length > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "mono",
+      style: {
+        fontSize: 10,
+        color: "var(--text-dim)",
+        marginTop: 3
+      }
+    }, "\u2192 ", it.result.format_potentiel.join(" · "))))));
+  })(), (() => {
+    const allQ = [];
+    done.forEach(it => (it.result?.questions_ouvertes || []).slice(0, 1).forEach(q => allQ.push(q)));
+    if (!allQ.length) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: "14px 20px",
+        borderTop: "1px solid var(--border)"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "info-section-label"
+    }, "\xB7 Questions qui restent ouvertes"), allQ.slice(0, 4).map((q, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: "small",
+      style: {
+        marginTop: 6,
+        paddingLeft: 14,
+        position: "relative",
+        color: "var(--text-dim)",
+        lineHeight: 1.5
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        position: "absolute",
+        left: 0,
+        color: "var(--gold)"
+      }
+    }, "?"), q)));
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "info-foot"
   }, /*#__PURE__*/React.createElement("span", {
     className: "mono small muted"
@@ -761,6 +828,11 @@ const SCHEMA_TYPES = [{
   label: 'Timeline',
   glyph: '⌛',
   desc: 'Progression / évolution'
+}, {
+  id: 'tableau',
+  label: 'Tableau',
+  glyph: '▦',
+  desc: 'Comparaison structurée source par source'
 }];
 let _mermaidReady = false;
 function ensureMermaid() {
@@ -843,7 +915,8 @@ function SchemaActif({
       flowchart: 'un flowchart TD (de haut en bas) montrant les connexions et dépendances entre les idées clés',
       mindmap: 'une mindmap avec le concept central et ses ramifications thématiques principales',
       quadrant: 'un quadrantChart classant les idées selon deux axes pertinents (choisis les axes qui font le plus sens)',
-      timeline: 'une timeline montrant la progression ou l\'évolution des idées dans le temps'
+      timeline: 'une timeline montrant la progression ou l\'évolution des idées dans le temps',
+      tableau: 'un diagramme de type "block-beta" ou "classDiagram" structurant les idées comme un tableau comparatif entre sources'
     }[schemaType];
     const anglePart = angle ? `\nAngle éditorial / question directrice : "${angle}"` : '';
     const prevPart = isIter && mermaidCode ? `\n\nDiagramme actuel à ajuster :\n${mermaidCode}` : '';
@@ -863,14 +936,14 @@ RÈGLES IMPÉRATIVES :
 - Labels en français, 3 à 5 mots maximum par noeud
 - Identifiants de noeuds : lettres et chiffres uniquement, pas d'espaces ni accents (ex: A1, nodeIA)
 - Labels avec espaces ou accents DOIVENT être entre guillemets : A1["Intelligence artificielle"]
-- ${schemaType === 'flowchart' ? 'Commence impérativement par "flowchart TD"' : schemaType === 'mindmap' ? 'Commence impérativement par "mindmap"' : schemaType === 'quadrant' ? 'Commence impérativement par "quadrantChart"' : 'Commence impérativement par "timeline"'}
+- ${schemaType === 'flowchart' ? 'Commence impérativement par "flowchart TD"' : schemaType === 'mindmap' ? 'Commence impérativement par "mindmap"' : schemaType === 'quadrant' ? 'Commence impérativement par "quadrantChart"' : schemaType === 'tableau' ? 'Commence impérativement par "block-beta" pour un tableau comparatif lisible' : 'Commence impérativement par "timeline"'}
 
 Code Mermaid :`;
     try {
       const raw = await window.claude.complete(prompt);
       let code = raw.trim().replace(/^```(?:mermaid)?\s*/i, '').replace(/```\s*$/i, '').trim();
       // Retire tout texte avant le mot-clé Mermaid
-      const keywords = ['flowchart', 'mindmap', 'quadrantChart', 'timeline'];
+      const keywords = ['flowchart', 'mindmap', 'quadrantChart', 'timeline', 'block-beta', 'classDiagram'];
       for (const kw of keywords) {
         const idx = code.indexOf(kw);
         if (idx > 0) {
@@ -902,6 +975,35 @@ Code Mermaid :`;
     });
     window.downloadBlob(blob, `schema-${new Date().toISOString().slice(0, 10)}.svg`);
     toast?.('SVG téléchargé');
+  }
+  function downloadPng() {
+    if (!svgOutput) return;
+    const svgBlob = new Blob([svgOutput], {
+      type: 'image/svg+xml;charset=utf-8'
+    });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const scale = 2; // 2x pour bonne résolution
+      canvas.width = img.naturalWidth * scale || 800;
+      canvas.height = img.naturalHeight * scale || 600;
+      const ctx2d = canvas.getContext('2d');
+      ctx2d.scale(scale, scale);
+      ctx2d.fillStyle = '#faf5e9';
+      ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+      ctx2d.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob => {
+        window.downloadBlob(blob, `schema-${new Date().toISOString().slice(0, 10)}.png`);
+        toast?.('PNG téléchargé (2×)');
+      }, 'image/png');
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      toast?.('Échec export PNG');
+    };
+    img.src = url;
   }
   const selCount = sel.size;
   return /*#__PURE__*/React.createElement("div", {
@@ -1068,19 +1170,36 @@ Code Mermaid :`;
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn btn-ghost small",
     onClick: () => setShowCode(v => !v)
-  }, showCode ? '▲ Masquer code' : '▼ Code Mermaid'), /*#__PURE__*/React.createElement("div", {
+  }, showCode ? '▲ Masquer code' : '▼ Éditer code'), /*#__PURE__*/React.createElement("div", {
     className: "grow"
   }), /*#__PURE__*/React.createElement("button", {
     className: "btn btn-ghost small",
     onClick: copyCode
-  }, "\u2398 Copier code"), svgOutput && /*#__PURE__*/React.createElement("button", {
+  }, "\u2398 Copier"), svgOutput && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     className: "btn btn-ghost small",
     onClick: downloadSvg
-  }, "\u2193 SVG")), showCode && mermaidCode && /*#__PURE__*/React.createElement("div", {
+  }, "\u2193 SVG"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost small",
+    onClick: downloadPng
+  }, "\u2193 PNG"))), showCode && mermaidCode && /*#__PURE__*/React.createElement("div", {
     className: "schema-code-block"
-  }, /*#__PURE__*/React.createElement("pre", {
-    className: "mono small"
-  }, mermaidCode)))));
+  }, /*#__PURE__*/React.createElement("textarea", {
+    className: "la-textarea mono small",
+    style: {
+      width: "100%",
+      minHeight: 140,
+      fontSize: 11,
+      fontFamily: "var(--mono)"
+    },
+    value: mermaidCode,
+    onChange: e => setMermaidCode(e.target.value)
+  }), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost small",
+    style: {
+      marginTop: 6
+    },
+    onClick: () => renderMermaid(mermaidCode)
+  }, "\u21BA R\xE9-afficher le sch\xE9ma")))));
 }
 
 // ─── Studio container ─────────────────────────────────────────────────

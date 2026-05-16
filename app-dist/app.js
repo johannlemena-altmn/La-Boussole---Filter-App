@@ -77,11 +77,142 @@ function Toast({
     className: "toast"
   }, m.text)));
 }
+
+// ── Onboarding wizard (première session) ────────────────────────────────
+function OnboardingWizard({
+  onDone,
+  defaultProjects
+}) {
+  const [step, setStep] = useState(0);
+  const [projectName, setProjectName] = useState(defaultProjects[0]?.name || "");
+  const steps = [{
+    icon: "⊙",
+    title: "Bienvenue dans Le Filtre",
+    body: "En 3 étapes, configure ton premier projet de veille pour que l'IA cible ses analyses sur ce qui compte vraiment pour toi.",
+    action: null
+  }, {
+    icon: "◎",
+    title: "Ton premier projet",
+    body: "Un projet = un territoire éditorial (ex : veille RSE, newsletter, Projet Z). Tu pourras en ajouter d'autres dans Calibrage.",
+    action: /*#__PURE__*/React.createElement("input", {
+      className: "setup-input",
+      value: projectName,
+      onChange: e => setProjectName(e.target.value),
+      placeholder: "Ex : Veille Boussole, Lettre FNE, Projet Z\u2026",
+      autoFocus: true,
+      style: {
+        width: "100%",
+        marginTop: 12,
+        padding: "10px 14px",
+        fontSize: 15
+      }
+    })
+  }, {
+    icon: "⬡",
+    title: "Maintenant, capture ton premier contenu",
+    body: "Colle un article, une newsletter, ou un email dans la Phase 02 · Capture. L'analyse IA fait le reste.",
+    action: null
+  }];
+  const current = steps[step];
+  const isLast = step === steps.length - 1;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      zIndex: 500,
+      background: "rgba(10,26,16,0.85)",
+      backdropFilter: "blur(6px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "var(--bg)",
+      border: "1px solid var(--border)",
+      borderRadius: 16,
+      padding: "40px 36px",
+      maxWidth: 480,
+      width: "100%",
+      boxShadow: "0 24px 64px rgba(0,0,0,0.4)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      marginBottom: 28
+    }
+  }, steps.map((_, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      height: 3,
+      flex: 1,
+      borderRadius: 2,
+      background: i <= step ? "var(--green)" : "var(--border)",
+      transition: "background 0.3s"
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 32,
+      marginBottom: 16
+    }
+  }, current.icon), /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontFamily: "var(--serif)",
+      fontWeight: 800,
+      fontSize: 22,
+      marginBottom: 10,
+      color: "var(--text)"
+    }
+  }, current.title), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "var(--text-dim)",
+      lineHeight: 1.6,
+      marginBottom: 20
+    }
+  }, current.body), current.action, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      marginTop: 28,
+      justifyContent: "flex-end"
+    }
+  }, step > 0 && /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost",
+    onClick: () => setStep(s => s - 1)
+  }, "\u2190 Retour"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary",
+    onClick: () => {
+      if (isLast) {
+        onDone(projectName);
+      } else setStep(s => s + 1);
+    },
+    disabled: step === 1 && !projectName.trim()
+  }, isLast ? "Commencer →" : "Suivant →")), /*#__PURE__*/React.createElement("button", {
+    className: "btn-inline small muted",
+    onClick: () => onDone(null),
+    style: {
+      marginTop: 16,
+      display: "block",
+      textAlign: "center",
+      width: "100%"
+    }
+  }, "Passer \u2014 je configure moi-m\xEAme dans Calibrage")));
+}
 function App() {
   const initial = loadState();
 
   // landing: vu le manifeste au moins une fois ?
   const [showManifesto, setShowManifesto] = useState(initial?.seenManifesto !== true);
+  // onboarding: première session (pas de state sauvegardé ET manifeste déjà vu)
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try {
+      return !localStorage.getItem('lf-onboarding-v1') && !!localStorage.getItem('le-filtre-v0.2') === false;
+    } catch {
+      return false;
+    }
+  });
   const [phase, setPhase] = useState(initial?.phase || "setup");
   const [projects, setProjects] = useState(initial?.projects || window.DEFAULTS.projects);
   const [blocs, setBlocs] = useState(initial?.blocs || window.DEFAULTS.blocs);
@@ -91,7 +222,7 @@ function App() {
   const [gardefous] = useState(window.DEFAULTS.gardefous);
   const [inspirations] = useState(window.DEFAULTS.inspirations);
   const [items, setItems] = useState(initial?.items || []);
-  const [theme, setTheme] = useState(initial?.theme || "light");
+  const [theme, setTheme] = useState(initial?.theme || "dark");
   const [isRunning, setIsRunning] = useState(false);
   const [t, setTweak] = useTweaks(DEFAULT_WEIGHTS);
 
@@ -278,14 +409,43 @@ function App() {
   // ── landing: manifeste plein écran ──
   if (showManifesto) {
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Manifesto, {
-      onEnter: () => setShowManifesto(false)
+      onEnter: () => {
+        setShowManifesto(false);
+        // Show onboarding if it's the very first time
+        try {
+          if (!localStorage.getItem('lf-onboarding-v1') && !localStorage.getItem('le-filtre-v0.2')) {
+            setShowOnboarding(true);
+          }
+        } catch {}
+      }
     }), /*#__PURE__*/React.createElement(Toast, {
       messages: toasts
     }));
   }
+  function handleOnboardingDone(customProjectName) {
+    try {
+      localStorage.setItem('lf-onboarding-v1', '1');
+    } catch {}
+    setShowOnboarding(false);
+    if (customProjectName && customProjectName.trim()) {
+      setProjects(prev => {
+        const updated = [...prev];
+        if (updated[0]) updated[0] = {
+          ...updated[0],
+          name: customProjectName.trim()
+        };
+        return updated;
+      });
+    }
+    setPhase("capture");
+    toast("C'est parti ! Capture ton premier contenu ↓");
+  }
   return /*#__PURE__*/React.createElement("div", {
     className: "app"
-  }, /*#__PURE__*/React.createElement(Sidebar, {
+  }, showOnboarding && /*#__PURE__*/React.createElement(OnboardingWizard, {
+    onDone: handleOnboardingDone,
+    defaultProjects: projects
+  }), /*#__PURE__*/React.createElement(Sidebar, {
     phase: phase,
     setPhase: setPhase,
     counts: counts,

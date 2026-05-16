@@ -3,6 +3,92 @@
 
 const { useState: useStateT, useMemo: useMemoT } = React;
 
+function HermesTriagePanel({ item, ctx }) {
+  const [open, setOpen] = useStateT(false);
+  const [loading, setLoading] = useStateT(false);
+  const [questions, setQuestions] = useStateT([]);
+  const [error, setError] = useStateT(null);
+
+  async function generate() {
+    if (questions.length > 0) { setOpen(o => !o); return; }
+    setOpen(true);
+    setLoading(true);
+    setError(null);
+    try {
+      const r = item.result;
+      const prompt = `Tu es Hermès, un agent de pensée critique éditoriale. Analyse ce contenu qualifié et génère exactement 5 questions de pensée critique qui aideront l'éditeur à décider quoi en faire.
+
+Contenu : "${r.title}"
+Résumé : ${r.summary || "—"}
+Bloc : ${r.bloc_id} · Score : ${r.score}/100
+Angle éditorial : ${r.angle_editorial || "non défini"}
+Verbatims clés : ${(r.verbatim_cles || []).slice(0,2).join(" | ") || "—"}
+
+Génère 5 questions courtes (1 phrase max chacune) qui poussent à questionner :
+1. La source et son agenda
+2. Ce qui manque dans le récit
+3. La pertinence pour les projets en cours
+4. Le contre-argument le plus solide
+5. L'action concrète à tirer de ce contenu
+
+Réponds avec un tableau JSON : ["question1","question2","question3","question4","question5"]
+Uniquement le JSON, sans explication.`;
+      const raw = await window.claude.complete(prompt);
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        setQuestions(parsed);
+      } else {
+        setError("Réponse inattendue de Hermès.");
+      }
+    } catch(e) {
+      setError("Erreur : " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function copyQuestions() {
+    const md = questions.map((q,i) => `${i+1}. ${q}`).join("\n");
+    navigator.clipboard.writeText("## Questions Hermès\n" + md);
+  }
+
+  return (
+    <div className="fiche-section" style={{borderTop: "1px solid var(--border)", marginTop: 16, paddingTop: 12}}>
+      <div style={{display:"flex", alignItems:"center", gap:10}}>
+        <button
+          className="btn btn-ghost small"
+          onClick={generate}
+          disabled={loading}
+          style={{color:"var(--terra)"}}
+        >
+          {loading
+            ? <><span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>◌</span> Hermès réfléchit…</>
+            : <>{open && questions.length > 0 ? "▲" : "▼"} ⚡ Penser avec Hermès</>
+          }
+        </button>
+        {questions.length > 0 && open && (
+          <button className="btn-inline small" onClick={copyQuestions} title="Copier les questions">⎘</button>
+        )}
+      </div>
+      {open && !loading && (
+        <div style={{marginTop:10}}>
+          {error && <div className="small" style={{color:"var(--red)"}}>{error}</div>}
+          {questions.map((q,i) => (
+            <div key={i} className="fiche-body" style={{
+              paddingLeft:18, position:"relative", marginBottom:6,
+              fontSize:13, lineHeight:1.5
+            }}>
+              <span style={{position:"absolute",left:0,color:"var(--terra)",fontWeight:700}}>{i+1}.</span>
+              {q}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FicheDetail({ item, ctx, onCopy }) {
   if (!item || !item.result) {
     return (
@@ -123,6 +209,8 @@ function FicheDetail({ item, ctx, onCopy }) {
           {item.text.slice(0, 800)}{item.text.length > 800 ? "…" : ""}
         </div>
       </div>
+
+      <HermesTriagePanel item={item} ctx={ctx} />
     </div>
   );
 }

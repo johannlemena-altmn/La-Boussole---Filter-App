@@ -350,6 +350,50 @@ function Infographic({ items, ctx, gardefous, toast }) {
           </div>
         </div>
 
+        {/* Angles éditoriaux agrégés */}
+        {(() => {
+          const angles = done.filter(i => i.result?.angle_editorial).slice(0, 4);
+          if (!angles.length) return null;
+          return (
+            <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)" }}>
+              <div className="info-section-label">· Angles éditoriaux à creuser</div>
+              {angles.map((it, i) => (
+                <div key={it.id} style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "flex-start" }}>
+                  <span className={`bloc-dot dot-${it.result.bloc_id}`} style={{ flexShrink: 0, marginTop: 4 }} />
+                  <div>
+                    <div className="small" style={{ fontStyle: "italic", color: "var(--green)", lineHeight: 1.4 }}>
+                      {it.result.angle_editorial}
+                    </div>
+                    {it.result.format_potentiel?.length > 0 && (
+                      <div className="mono" style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 3 }}>
+                        → {it.result.format_potentiel.join(" · ")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* Questions ouvertes agrégées */}
+        {(() => {
+          const allQ = [];
+          done.forEach(it => (it.result?.questions_ouvertes || []).slice(0,1).forEach(q => allQ.push(q)));
+          if (!allQ.length) return null;
+          return (
+            <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)" }}>
+              <div className="info-section-label">· Questions qui restent ouvertes</div>
+              {allQ.slice(0, 4).map((q, i) => (
+                <div key={i} className="small" style={{ marginTop: 6, paddingLeft: 14, position: "relative", color: "var(--text-dim)", lineHeight: 1.5 }}>
+                  <span style={{ position: "absolute", left: 0, color: "var(--gold)" }}>?</span>
+                  {q}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
         <div className="info-foot">
           <span className="mono small muted">Le Filtre · v0.2 · local-first · {done.length} signaux qualifiés</span>
           <span className="mono small muted">À compléter à la main →</span>
@@ -603,10 +647,11 @@ function LectureActive({ items, ctx, toast }) {
 
 // ─── Schéma actif (Infographie actionnable) ──────────────────────────
 const SCHEMA_TYPES = [
-  { id: 'flowchart', label: 'Flux', glyph: '⟶', desc: 'Connexions & dépendances entre idées' },
+  { id: 'flowchart', label: 'Flux',     glyph: '⟶', desc: 'Connexions & dépendances entre idées' },
   { id: 'mindmap',   label: 'Carte',    glyph: '◎', desc: 'Concept central + ramifications' },
   { id: 'quadrant',  label: 'Quadrant', glyph: '⊞', desc: 'Classement selon 2 axes' },
   { id: 'timeline',  label: 'Timeline', glyph: '⌛', desc: 'Progression / évolution' },
+  { id: 'tableau',   label: 'Tableau',  glyph: '▦', desc: 'Comparaison structurée source par source' },
 ];
 
 let _mermaidReady = false;
@@ -685,6 +730,7 @@ function SchemaActif({ items, ctx, toast }) {
       mindmap:   'une mindmap avec le concept central et ses ramifications thématiques principales',
       quadrant:  'un quadrantChart classant les idées selon deux axes pertinents (choisis les axes qui font le plus sens)',
       timeline:  'une timeline montrant la progression ou l\'évolution des idées dans le temps',
+      tableau:   'un diagramme de type "block-beta" ou "classDiagram" structurant les idées comme un tableau comparatif entre sources',
     }[schemaType];
 
     const anglePart = angle ? `\nAngle éditorial / question directrice : "${angle}"` : '';
@@ -706,7 +752,7 @@ RÈGLES IMPÉRATIVES :
 - Labels en français, 3 à 5 mots maximum par noeud
 - Identifiants de noeuds : lettres et chiffres uniquement, pas d'espaces ni accents (ex: A1, nodeIA)
 - Labels avec espaces ou accents DOIVENT être entre guillemets : A1["Intelligence artificielle"]
-- ${schemaType === 'flowchart' ? 'Commence impérativement par "flowchart TD"' : schemaType === 'mindmap' ? 'Commence impérativement par "mindmap"' : schemaType === 'quadrant' ? 'Commence impérativement par "quadrantChart"' : 'Commence impérativement par "timeline"'}
+- ${schemaType === 'flowchart' ? 'Commence impérativement par "flowchart TD"' : schemaType === 'mindmap' ? 'Commence impérativement par "mindmap"' : schemaType === 'quadrant' ? 'Commence impérativement par "quadrantChart"' : schemaType === 'tableau' ? 'Commence impérativement par "block-beta" pour un tableau comparatif lisible' : 'Commence impérativement par "timeline"'}
 
 Code Mermaid :`;
 
@@ -717,7 +763,7 @@ Code Mermaid :`;
         .replace(/```\s*$/i, '')
         .trim();
       // Retire tout texte avant le mot-clé Mermaid
-      const keywords = ['flowchart', 'mindmap', 'quadrantChart', 'timeline'];
+      const keywords = ['flowchart', 'mindmap', 'quadrantChart', 'timeline', 'block-beta', 'classDiagram'];
       for (const kw of keywords) {
         const idx = code.indexOf(kw);
         if (idx > 0) { code = code.slice(idx); break; }
@@ -744,6 +790,31 @@ Code Mermaid :`;
     const blob = new Blob([svgOutput], { type: 'image/svg+xml;charset=utf-8' });
     window.downloadBlob(blob, `schema-${new Date().toISOString().slice(0,10)}.svg`);
     toast?.('SVG téléchargé');
+  }
+
+  function downloadPng() {
+    if (!svgOutput) return;
+    const svgBlob = new Blob([svgOutput], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const scale = 2; // 2x pour bonne résolution
+      canvas.width = img.naturalWidth * scale || 800;
+      canvas.height = img.naturalHeight * scale || 600;
+      const ctx2d = canvas.getContext('2d');
+      ctx2d.scale(scale, scale);
+      ctx2d.fillStyle = '#faf5e9';
+      ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+      ctx2d.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob => {
+        window.downloadBlob(blob, `schema-${new Date().toISOString().slice(0,10)}.png`);
+        toast?.('PNG téléchargé (2×)');
+      }, 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); toast?.('Échec export PNG'); };
+    img.src = url;
   }
 
   const selCount = sel.size;
@@ -894,19 +965,34 @@ Code Mermaid :`;
             {mermaidCode && (
               <div className="studio-card-actions" style={{ marginTop: 14 }}>
                 <button className="btn btn-ghost small" onClick={() => setShowCode(v => !v)}>
-                  {showCode ? '▲ Masquer code' : '▼ Code Mermaid'}
+                  {showCode ? '▲ Masquer code' : '▼ Éditer code'}
                 </button>
                 <div className="grow" />
-                <button className="btn btn-ghost small" onClick={copyCode}>⎘ Copier code</button>
+                <button className="btn btn-ghost small" onClick={copyCode}>⎘ Copier</button>
                 {svgOutput && (
-                  <button className="btn btn-ghost small" onClick={downloadSvg}>↓ SVG</button>
+                  <>
+                    <button className="btn btn-ghost small" onClick={downloadSvg}>↓ SVG</button>
+                    <button className="btn btn-ghost small" onClick={downloadPng}>↓ PNG</button>
+                  </>
                 )}
               </div>
             )}
 
             {showCode && mermaidCode && (
               <div className="schema-code-block">
-                <pre className="mono small">{mermaidCode}</pre>
+                <textarea
+                  className="la-textarea mono small"
+                  style={{ width: "100%", minHeight: 140, fontSize: 11, fontFamily: "var(--mono)" }}
+                  value={mermaidCode}
+                  onChange={e => setMermaidCode(e.target.value)}
+                />
+                <button
+                  className="btn btn-ghost small"
+                  style={{ marginTop: 6 }}
+                  onClick={() => renderMermaid(mermaidCode)}
+                >
+                  ↺ Ré-afficher le schéma
+                </button>
               </div>
             )}
           </div>

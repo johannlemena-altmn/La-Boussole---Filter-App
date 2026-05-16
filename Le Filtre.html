@@ -1456,6 +1456,94 @@
     .main { padding: 28px 20px 80px; }
     .info-bar-row { grid-template-columns: 140px 1fr 28px; }
   }
+
+  /* ── Mobile compact (≤ 600px) ── */
+  @media (max-width: 600px) {
+    /* Sidebar → barre de nav en bas */
+    .app { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    .sidebar {
+      position: fixed; bottom: 0; left: 0; right: 0; top: auto;
+      height: auto; width: 100%;
+      flex-direction: row; overflow-x: auto; overflow-y: hidden;
+      border-right: none; border-top: 1px solid var(--border);
+      padding: 6px 8px 10px; gap: 4px;
+      z-index: 200; background: var(--bg);
+      -webkit-overflow-scrolling: touch;
+    }
+    .brand { display: none; }
+    .sidebar-foot { display: none; }
+    .phases { flex-direction: row; gap: 3px; width: auto; min-width: 100%; padding: 0; }
+    .phase-head { display: none; }
+    .phase {
+      flex-direction: column; align-items: center; padding: 6px 10px;
+      min-width: 56px; border-radius: 8px; gap: 2px;
+    }
+    .phase-num { font-size: 10px; }
+    .phase-title { font-size: 10px; font-weight: 600; white-space: nowrap; }
+    .phase-meta { display: none; }
+
+    /* Main content — espace pour la nav en bas */
+    .main { padding: 16px 14px 90px; }
+    .page-head h1 { font-size: 20px; line-height: 1.2; }
+    .page-head { margin-bottom: 20px; }
+
+    /* Triage — liste + detail en colonne */
+    .triage-layout { grid-template-columns: 1fr; gap: 12px; }
+    .triage-list { max-height: 260px; overflow-y: auto; }
+    .triage-detail { max-height: none; }
+
+    /* Schéma actif — colonnes en stack */
+    .schema-layout { flex-direction: column; gap: 16px; }
+    .schema-left { width: 100%; max-width: none; }
+    .schema-right { width: 100%; }
+
+    /* Infographie — colonnes en stack */
+    .info-cols { flex-direction: column; gap: 16px; }
+    .info-sheet { padding: 20px 16px; }
+    .info-head { padding: 16px; }
+
+    /* Studio toolbar */
+    .studio-toolbar { grid-template-columns: 1fr; }
+    .studio-card { padding: 16px; }
+    .studio-card-head { flex-direction: column; gap: 8px; }
+    .studio-card-actions { flex-wrap: wrap; gap: 6px; }
+
+    /* Tracker */
+    .tr-layout { flex-direction: column !important; }
+    .tr-sidebar { width: 100% !important; min-width: 0 !important; border-right: none !important; border-bottom: 1px solid var(--border); }
+
+    /* Capture modes */
+    .capture-modes { grid-template-columns: repeat(3, 1fr); }
+
+    /* Dashboard widgets */
+    .dash-grid { grid-template-columns: 1fr !important; }
+
+    /* Toolbar / filtres */
+    .toolbar { flex-wrap: wrap; gap: 6px; }
+    .filter-group { flex-wrap: wrap; }
+
+    /* Cluster */
+    .cluster-canvas { height: 300px !important; }
+
+    /* TweaksPanel */
+    .tweaks-panel { width: 100% !important; right: 0 !important; }
+  }
+
+  /* Print — pour l'export PDF de l'infographie */
+  @media print {
+    .sidebar, .tweaks-panel, .page-head, .toolbar,
+    .studio-toolbar, .studio-card-actions, .studio-card-head p,
+    .nav-btns, .btn, button, .toast { display: none !important; }
+    .main { padding: 0 !important; }
+    .app { display: block !important; }
+    .info-sheet {
+      box-shadow: none !important; border: none !important;
+      page-break-inside: avoid;
+      max-width: 100% !important;
+    }
+    body { background: white !important; }
+    [data-theme="dark"] { --bg: #fff; --text: #111; --bg2: #f4f4f4; }
+  }
 </style>
 </head>
 <body>

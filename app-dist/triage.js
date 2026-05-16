@@ -5,6 +5,116 @@ const {
   useState: useStateT,
   useMemo: useMemoT
 } = React;
+function HermesTriagePanel({
+  item,
+  ctx
+}) {
+  const [open, setOpen] = useStateT(false);
+  const [loading, setLoading] = useStateT(false);
+  const [questions, setQuestions] = useStateT([]);
+  const [error, setError] = useStateT(null);
+  async function generate() {
+    if (questions.length > 0) {
+      setOpen(o => !o);
+      return;
+    }
+    setOpen(true);
+    setLoading(true);
+    setError(null);
+    try {
+      const r = item.result;
+      const prompt = `Tu es Hermès, un agent de pensée critique éditoriale. Analyse ce contenu qualifié et génère exactement 5 questions de pensée critique qui aideront l'éditeur à décider quoi en faire.
+
+Contenu : "${r.title}"
+Résumé : ${r.summary || "—"}
+Bloc : ${r.bloc_id} · Score : ${r.score}/100
+Angle éditorial : ${r.angle_editorial || "non défini"}
+Verbatims clés : ${(r.verbatim_cles || []).slice(0, 2).join(" | ") || "—"}
+
+Génère 5 questions courtes (1 phrase max chacune) qui poussent à questionner :
+1. La source et son agenda
+2. Ce qui manque dans le récit
+3. La pertinence pour les projets en cours
+4. Le contre-argument le plus solide
+5. L'action concrète à tirer de ce contenu
+
+Réponds avec un tableau JSON : ["question1","question2","question3","question4","question5"]
+Uniquement le JSON, sans explication.`;
+      const raw = await window.claude.complete(prompt);
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        setQuestions(parsed);
+      } else {
+        setError("Réponse inattendue de Hermès.");
+      }
+    } catch (e) {
+      setError("Erreur : " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+  function copyQuestions() {
+    const md = questions.map((q, i) => `${i + 1}. ${q}`).join("\n");
+    navigator.clipboard.writeText("## Questions Hermès\n" + md);
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    className: "fiche-section",
+    style: {
+      borderTop: "1px solid var(--border)",
+      marginTop: 16,
+      paddingTop: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-ghost small",
+    onClick: generate,
+    disabled: loading,
+    style: {
+      color: "var(--terra)"
+    }
+  }, loading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      animation: "spin 1s linear infinite",
+      display: "inline-block"
+    }
+  }, "\u25CC"), " Herm\xE8s r\xE9fl\xE9chit\u2026") : /*#__PURE__*/React.createElement(React.Fragment, null, open && questions.length > 0 ? "▲" : "▼", " \u26A1 Penser avec Herm\xE8s")), questions.length > 0 && open && /*#__PURE__*/React.createElement("button", {
+    className: "btn-inline small",
+    onClick: copyQuestions,
+    title: "Copier les questions"
+  }, "\u2398")), open && !loading && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10
+    }
+  }, error && /*#__PURE__*/React.createElement("div", {
+    className: "small",
+    style: {
+      color: "var(--red)"
+    }
+  }, error), questions.map((q, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "fiche-body",
+    style: {
+      paddingLeft: 18,
+      position: "relative",
+      marginBottom: 6,
+      fontSize: 13,
+      lineHeight: 1.5
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      position: "absolute",
+      left: 0,
+      color: "var(--terra)",
+      fontWeight: 700
+    }
+  }, i + 1, "."), q))));
+}
 function FicheDetail({
   item,
   ctx,
@@ -149,7 +259,10 @@ function FicheDetail({
       overflowY: "auto",
       whiteSpace: "pre-wrap"
     }
-  }, item.text.slice(0, 800), item.text.length > 800 ? "…" : "")));
+  }, item.text.slice(0, 800), item.text.length > 800 ? "…" : "")), /*#__PURE__*/React.createElement(HermesTriagePanel, {
+    item: item,
+    ctx: ctx
+  }));
 }
 
 // ─── Verbatim classifier (heuristique légère côté front) ───────────────
